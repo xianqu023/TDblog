@@ -1,0 +1,332 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-mono);
+  --color-dark-bg: #13151a;
+  --color-dark-card: #1e2228;
+  --color-dark-input: #22262e;
+  --color-dark-hover: #2a2e37;
+  --color-dark-border: #2a2e37;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==================== 文章自动排版样式 ==================== */
+
+/* 图片包装容器 */
+.article-image-wrapper {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.article-image-wrapper .article-image {
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+  max-height: 550px;
+  object-fit: contain;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.article-image-wrapper .article-image:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transform: scale(1.015);
+}
+
+/* 图片网格（连续图片自动排版） */
+.image-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.image-grid .article-image-wrapper {
+  margin: 0;
+}
+
+/* 中文段落首行缩进 */
+.chinese-indent {
+  text-indent: 2em;
+}
+
+/* 引用块样式 */
+.styled-blockquote {
+  border-left-width: 4px;
+  border-left-color: #3b82f6;
+  background-color: rgba(239, 246, 255, 0.5);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-top-right-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  font-style: italic;
+  color: #4b5563;
+  position: relative;
+}
+
+.styled-blockquote::before {
+  content: '"';
+  font-size: 3rem;
+  color: #bfdbfe;
+  position: absolute;
+  top: -0.5rem;
+  left: -0.5rem;
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+/* 表格包装容器 */
+.table-wrapper {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.styled-table thead {
+  background-color: #f3f4f6;
+}
+
+.styled-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom-width: 2px;
+  border-bottom-color: #d1d5db;
+}
+
+.styled-table td {
+  padding: 0.75rem 1rem;
+  border-bottom-width: 1px;
+  border-bottom-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.styled-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* 代码块样式 */
+.code-block-wrapper {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.code-block-header {
+  background-color: #1f2937;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.code-lang {
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  color: #d1d5db;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.styled-code-block {
+  background-color: #111827;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 0;
+}
+
+.styled-code-block code {
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.75;
+  color: #f3f4f6;
+}
+
+/* 列表样式 */
+.styled-list {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.styled-list > * + * {
+  margin-top: 0.5rem;
+}
+
+.styled-list-ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.styled-list-ul li {
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.styled-list-ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #3b82f6;
+  border-radius: 9999px;
+}
+
+.styled-list-ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: item;
+}
+
+.styled-list-ol li {
+  padding-left: 2rem;
+  position: relative;
+  counter-increment: item;
+}
+
+.styled-list-ol li::before {
+  content: counter(item);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* 强调文本样式 */
+.text-emphasis {
+  position: relative;
+  font-weight: 600;
+  background: linear-gradient(transparent 60%, rgba(59, 130, 246, 0.2) 60%);
+}
+
+.text-emphasis-italic {
+  color: #4b5563;
+  border-left: 2px solid #e5e7eb;
+  border-right: 2px solid #e5e7eb;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+/* 首个段落引语样式 */
+.article-lead {
+  margin-bottom: 2rem;
+}
+
+.article-lead p {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: #374151;
+}
+
+/* 标题锚点样式 */
+.heading-anchor {
+  position: relative;
+  scroll-margin-top: 6rem;
+}
+
+.heading-anchor .heading-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.heading-anchor .heading-link:hover {
+  text-decoration: none;
+}
+
+.heading-anchor .heading-link::before {
+  content: '#';
+  position: absolute;
+  left: -1.5rem;
+  top: 0;
+  opacity: 0;
+  color: #3b82f6;
+  transition: opacity 0.2s;
+}
+
+.heading-anchor:hover .heading-link::before {
+  opacity: 1;
+}
+
+/* ==================== 暗色模式适配 ==================== */
+
+.dark .styled-blockquote {
+  border-left-color: #60a5fa;
+  background-color: rgba(30, 58, 138, 0.1);
+  color: #9ca3af;
+}
+
+.dark .styled-blockquote::before {
+  color: #1e3a8a;
+}
+
+.dark .styled-table thead {
+  background-color: #1f2937;
+}
+
+.dark .styled-table th {
+  border-bottom-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark .styled-table td {
+  border-bottom-color: #374151;
+  color: #d1d5db;
+}
+
+.dark .styled-table tbody tr:hover {
+  background-color: rgba(31, 41, 55, 0.5);
+}
+
+.dark .styled-list-ul li::before {
+  background-color: #60a5fa;
+}
+
+.dark .text-emphasis {
+  background: linear-gradient(transparent 60%, rgba(96, 165, 250, 0.3) 60%);
+}
+
+.dark .text-emphasis-italic {
+  color: #9ca3af;
+  border-color: #374151;
+}

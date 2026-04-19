@@ -1,0 +1,15 @@
+# Files to exclude from builds
+node_modules/
+.next/
+.turbo/
+dist/
+dist-standalone/
+dist-source/
+logs/
+.git/
+.gitignore
+.env.local
+.env
+*.pid
+data/
+uploads/

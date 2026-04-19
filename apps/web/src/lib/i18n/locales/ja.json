@@ -1,0 +1,166 @@
+{
+  "common": {
+    "home": "ホーム",
+    "articles": "記事",
+    "tags": "タグ",
+    "categories": "カテゴリー",
+    "shop": "ショップ",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "register": "登録",
+    "search": "検索",
+    "filter": "フィルター",
+    "loading": "読み込み中...",
+    "more": "もっと",
+    "viewAll": "すべて表示",
+    "back": "戻る",
+    "submit": "送信",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "update": "更新",
+    "confirm": "確認",
+    "success": "成功",
+    "error": "エラー",
+    "warning": "警告",
+    "info": "情報"
+  },
+  "nav": {
+    "home": "ホーム",
+    "articles": "記事",
+    "tags": "タグクラウド",
+    "shop": "ショップ",
+    "orders": "注文",
+    "login": "ログイン",
+    "register": "登録",
+    "dashboard": "管理パネル",
+    "userCenter": "ユーザーセンター",
+    "settings": "アカウント設定",
+    "logout": "ログアウト"
+  },
+  "home": {
+    "hero": {
+      "welcome": "私のブログへようこそ",
+      "subtitle": "テクノロジー、生活、思考を共有する",
+      "slide1Title": "私のブログへようこそ",
+      "slide1Subtitle": "テクノロジー、生活、思考を共有する",
+      "slide2Title": "テクノロジーの無限の可能性を探る",
+      "slide2Subtitle": "フロントエンドからバックエンド、理論から実践まで",
+      "slide3Title": "成長の每一步を記録する",
+      "slide3Subtitle": "言葉で思考と感悟を記録する",
+      "learnMore": "詳しくはこちら",
+      "previousSlide": "前のスライド",
+      "nextSlide": "次のスライド",
+      "slideIndicator": "スライド {current} / {total}"
+    },
+    "popularArticles": "人気記事",
+    "recentArticles": "最新記事",
+    "noArticles": "まだ記事がありません",
+    "loadMore": "さらに記事を読み込む"
+  },
+  "sidebar": {
+    "blogger": {
+      "defaultName": "ブロガー名",
+      "defaultBio": "テクノロジーと生活を愛する",
+      "articles": "記事",
+      "views": "閲覧",
+      "followers": "フォロワー"
+    },
+    "ad": {
+      "label": "広告",
+      "defaultTitle": "広告タイトル",
+      "defaultDescription": "これは広告スペースです。管理パネルから広告コンテンツを追加または変更できます",
+      "learnMore": "詳しくはこちら"
+    },
+    "popularArticles": "人気記事",
+    "noArticles": "まだ記事がありません",
+    "tagCloud": {
+      "title": "タグクラウド",
+      "articleCount": "記事",
+      "noTags": "まだタグがありません"
+    },
+    "countdown": {
+      "defaultTitle": "カウントダウン",
+      "defaultDescription": "新年まであと",
+      "days": "日",
+      "hours": "時間",
+      "minutes": "分",
+      "seconds": "秒"
+    },
+    "weather": {
+      "feelsLike": "体感温度",
+      "humidity": "湿度",
+      "windSpeed": "風速",
+      "condition": {
+        "Clear": "晴れ",
+        "Clouds": "曇り",
+        "Rain": "雨",
+        "Snow": "雪",
+        "Thunderstorm": "雷雨",
+        "Drizzle": "霧雨",
+        "default": "不明"
+      }
+    }
+  },
+  "article": {
+    "articles": "記事",
+    "readMore": "続きを読む",
+    "publishedAt": "公開日",
+    "updatedAt": "更新日",
+    "views": "閲覧",
+    "tags": "タグ",
+    "share": "シェア",
+    "relatedArticles": "関連記事",
+    "premium": "プレミアム",
+    "free": "無料",
+    "price": "価格",
+    "buyNow": "今すぐ購入",
+    "locked": "コンテンツがロックされています",
+    "unlockToRead": "購入して全文を読む",
+    "noArticles": "まだ記事がありません",
+    "loadMore": "さらに記事を読み込む"
+  },
+  "auth": {
+    "login": "ログイン",
+    "register": "登録",
+    "email": "メール",
+    "password": "パスワード",
+    "username": "ユーザー名",
+    "confirmPassword": "パスワードの確認",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "hasAccount": "すでにアカウントをお持ちですか？",
+    "loginSuccess": "ログインに成功しました",
+    "loginFailed": "ログインに失敗しました",
+    "logoutSuccess": "ログアウトしました",
+    "welcomeBack": "おかえりなさい",
+    "createAccount": "新しいアカウントを作成"
+  },
+  "userCenter": {
+    "title": "ユーザーセンター",
+    "profile": "プロフィール",
+    "orders": "マイオーダー",
+    "downloads": "マイダウンロード",
+    "membership": "メンバーシップステータス",
+    "settings": "アカウント設定",
+    "adminPanel": "管理パネル",
+    "welcome": "ようこそ",
+    "memberSince": "メンバーシップ開始日",
+    "quickLinks": "クイックリンク"
+  },
+  "footer": {
+    "copyright": "© 2026 My Blog. All rights reserved.",
+    "poweredBy": "Powered by Next.js",
+    "icp": "ICPライセンス",
+    "quickLinks": "クイックリンク",
+    "followUs": "フォローする"
+  },
+  "pagination": {
+    "previous": "前へ",
+    "next": "次へ",
+    "page": "{page} ページ",
+    "total": "全 {total} ページ"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "blog-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "start": "bash scripts/start-dev.sh",
+    "start:prod": "bash scripts/start-prod.sh",
+    "build:standalone": "bash scripts/build-standalone.sh",
+    "build:source": "bash scripts/build-source.sh",
+    "build:all": "pnpm build && pnpm build:standalone && pnpm build:source",
+    "manage": "bash scripts/manage.sh",
+    "logs": "bash scripts/manage.sh logs",
+    "logs:error": "bash scripts/manage.sh logs-error",
+    "logs:clean": "bash scripts/logs.sh clean",
+    "logs:rotate": "bash scripts/logs.sh rotate",
+    "logs:analyze": "bash scripts/logs.sh analyze",
+    "status": "bash scripts/manage.sh status",
+    "restart": "bash scripts/manage.sh restart",
+    "stop": "bash scripts/manage.sh stop"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "pkg": "^5.8.1"
+  }
+}
