@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "cd packages/database && npx prisma@6.19.3 generate && cd ../.. && cd apps/web && npx next build && cd .. && ln -sf apps/web/.next .next",
+  "buildCommand": "cd packages/database && npx prisma@6.19.3 generate && cd ../.. && cd apps/web && npx next build && cd .. && cp -r apps/web/.next .next",
   "installCommand": "pnpm install",
   "env": {
     "NODE_ENV": "production",
