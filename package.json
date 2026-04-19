@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
+    "build:vercel": "cd packages/database && npx prisma generate && cd ../.. && cd apps/web && npx next build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "start": "bash scripts/start-dev.sh",
