@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
-  "outputDirectory": "apps/web/.next",
   "buildCommand": "cd packages/database && npx prisma generate && cd ../.. && cd apps/web && npx next build",
+  "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install",
   "env": {
     "NODE_ENV": "production",
