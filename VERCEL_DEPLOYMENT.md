@@ -104,10 +104,10 @@ openssl rand -base64 32
 
 ```
 Framework Preset:    Next.js
-Root Directory:      apps/web
-Build Command:       cd ../../packages/database && npx prisma generate && cd ../.. && npx next build
-Output Directory:    .next
-Install Command:     cd ../.. && pnpm install
+Root Directory:      留空（默认）
+Build Command:       cd packages/database && npx prisma generate && cd ../.. && cd apps/web && npx next build
+Output Directory:    apps/web/.next
+Install Command:     pnpm install
 ```
 
 #### Environment Variables
