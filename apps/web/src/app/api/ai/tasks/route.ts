@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      tasks: tasks.map((task) => ({
+      tasks: (tasks as any[]).map((task: any) => ({
         id: task.id,
         type: task.type,
         status: task.status,

@@ -171,9 +171,9 @@ ${content.substring(0, 2000)}
 
     for (const concept of concepts.slice(0, maxLinks)) {
       // 查找包含该概念的文章
-      const matchingArticles = articles.filter((article) =>
-        article.translations.some(
-          (t) =>
+      const matchingArticles = (articles as any[]).filter((article: any) =>
+        (article.translations as any[]).some(
+          (t: any) =>
             t.title.toLowerCase().includes(concept.toLowerCase()) ||
             concept.toLowerCase().includes(t.title.toLowerCase())
         )

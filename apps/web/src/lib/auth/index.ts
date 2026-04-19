@@ -55,8 +55,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         // 提取权限
-        const permissions = user.roles.flatMap((ur) =>
-          ur.role.permissions.map((rp) => rp.permission.name)
+        const permissions = (user.roles as any[]).flatMap((ur: any) =>
+          (ur.role.permissions as any[]).map((rp: any) => rp.permission.name)
         );
 
         return {

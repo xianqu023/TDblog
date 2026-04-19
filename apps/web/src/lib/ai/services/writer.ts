@@ -143,7 +143,7 @@ export class AIWriterService {
       take: limit,
     });
 
-    return tasks.map((task) => ({
+    return (tasks as any[]).map((task: any) => ({
       id: task.id,
       type: task.type as any,
       status: task.status as any,

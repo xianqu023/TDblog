@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     const storage = getStorage();
 
     // 格式化响应数据
-    const formattedFiles = files.map((file) => ({
+    const formattedFiles = (files as any[]).map((file: any) => ({
       id: file.id,
       filename: file.filename,
       originalName: file.originalName,
@@ -146,7 +146,7 @@ export async function DELETE(request: NextRequest) {
 
     // 检查权限（只能删除自己的文件，除非有 file:delete 权限）
     const canDeleteAny = session.user.permissions?.includes('file:delete');
-    const unauthorizedFiles = files.filter((f) => f.userId !== session.user.id);
+    const unauthorizedFiles = (files as any[]).filter((f: any) => f.userId !== session.user.id);
 
     if (unauthorizedFiles.length > 0 && !canDeleteAny) {
       return NextResponse.json(

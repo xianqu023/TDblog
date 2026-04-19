@@ -42,7 +42,7 @@ export async function GET(
       displayName: user.profile?.displayName || "",
       avatarUrl: user.profile?.avatarUrl || "",
       bio: user.profile?.bio || "",
-      roles: user.roles.map((ur: { role: { id: string; name: string; displayName: string } }) => ({
+      roles: (user.roles as any[]).map((ur: any) => ({
         id: ur.role.id,
         name: ur.role.name,
         displayName: ur.role.displayName,
@@ -93,45 +93,48 @@ export async function PATCH(
   const updateData: any = {};
   if (username) updateData.username = username;
   if (email) updateData.email = email;
+  if (password) updateData.passwordHash = await bcrypt.hash(password, 12);
   if (status) updateData.status = status;
-  if (password) {
-    updateData.passwordHash = await bcrypt.hash(password, 12);
-  }
 
-  await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id },
-    data: updateData,
+    data: {
+      ...updateData,
+      profile: {
+        upsert: {
+          create: {
+            displayName: displayName || "",
+            avatarUrl: avatarUrl || "",
+            bio: bio || "",
+          },
+          update: {
+            displayName: displayName || "",
+            avatarUrl: avatarUrl || "",
+            bio: bio || "",
+          },
+        },
+      },
+      ...(roleIds && {
+        roles: {
+          deleteMany: {},
+          create: roleIds.map((roleId: string) => ({ roleId })),
+        },
+      }),
+    },
+    include: {
+      profile: true,
+      roles: {
+        include: {
+          role: true,
+        },
+      },
+    },
   });
 
-  // 更新角色
-  if (roleIds && Array.isArray(roleIds)) {
-    await prisma.userRole.deleteMany({ where: { userId: id } });
-    if (roleIds.length > 0) {
-      await prisma.userRole.createMany({
-        data: roleIds.map((roleId: string) => ({ userId: id, roleId })),
-      });
-    }
-  }
-
-  // 更新资料
-  if (displayName !== undefined || avatarUrl !== undefined || bio !== undefined) {
-    await prisma.userProfile.upsert({
-      where: { userId: id },
-      update: {
-        ...(displayName !== undefined && { displayName }),
-        ...(avatarUrl !== undefined && { avatarUrl }),
-        ...(bio !== undefined && { bio }),
-      },
-      create: {
-        userId: id,
-        displayName: displayName || username || "",
-        avatarUrl: avatarUrl || "",
-        bio: bio || "",
-      },
-    });
-  }
-
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    data: updatedUser,
+  });
 }
 
 // DELETE - 删除用户
@@ -147,15 +150,12 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // 不能删除自己
-  if (id === session.user.id) {
-    return NextResponse.json(
-      { error: "不能删除自己的账户" },
-      { status: 400 }
-    );
-  }
+  await prisma.user.delete({
+    where: { id },
+  });
 
-  await prisma.user.delete({ where: { id } });
-
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    message: "用户已删除",
+  });
 }
