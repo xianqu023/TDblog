@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="inkwell">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inkwell | 创意写作在线学习平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'var(--primary)',
+                        'primary-light': 'var(--primary-light)',
+                        'primary-dark': 'var(--primary-dark)',
+                        secondary: 'var(--secondary)',
+                        accent: 'var(--accent)',
+                        'accent-hover': 'var(--accent-hover)',
+                        bg: 'var(--bg)',
+                        'bg-alt': 'var(--bg-alt)',
+                        'bg-card': 'var(--bg-card)',
+                        surface: 'var(--surface)',
+                        text: 'var(--text)',
+                        'text-muted': 'var(--text-muted)',
+                        border: 'var(--border)',
+                    },
+                    fontFamily: {
+                        sans: ['var(--font-sans)', 'sans-serif'],
+                        serif: ['var(--font-serif)', 'serif'],
+                        mono: ['var(--font-mono)', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* ============================================
+           Theme: Inkwell (文艺复古风格)
+           ============================================ */
+        [data-theme="inkwell"] {
+            --primary: #1A2456;
+            --primary-light: #2a3a7a;
+            --primary-dark: #0f1740;
+            --secondary: #5D4037;
+            --accent: #B71C1C;
+            --accent-hover: #d32f2f;
+            --bg: #F5F2E9;
+            --bg-alt: #EDE8D8;
+            --bg-card: #F5F2E9;
+            --surface: #FFFFFF;
+            --text: #1A2456;
+            --text-muted: rgba(26, 36, 86, 0.7);
+            --border: #E8DCCA;
+            --font-sans: 'Inter';
+            --font-serif: 'Playfair Display';
+            --font-mono: 'JetBrains Mono';
+            --card-radius: 0.5rem;
+            --btn-radius: 0.375rem;
+            --nav-bg: rgba(245, 242, 233, 0.9);
+            --hero-gradient: linear-gradient(135deg, rgba(26, 36, 86, 0.05) 0%, rgba(245, 242, 233, 0) 100%);
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --glow: none;
+            --gradient-accent: linear-gradient(135deg, #B71C1C, #d32f2f);
+        }
+
+        /* ============================================
+           Theme: Cyber (现代科技风格)
+           ============================================ */
+        [data-theme="cyber"] {
+            --primary: #0ea5e9;
+            --primary-light: #38bdf8;
+            --primary-dark: #0284c7;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --accent-hover: #22d3ee;
+            --bg: #0f172a;
+            --bg-alt: #1e293b;
+            --bg-card: #1e293b;
+            --surface: #334155;
+            --text: #f1f5f9;
+            --text-muted: rgba(241, 245, 249, 0.6);
+            --border: #334155;
+            --font-sans: 'Inter';
+            --font-serif: 'Inter';
+            --font-mono: 'JetBrains Mono';
+            --card-radius: 1rem;
+            --btn-radius: 0.75rem;
+            --nav-bg: rgba(15, 23, 42, 0.85);
+            --hero-gradient: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(6, 182, 212, 0.08) 100%);
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(14, 165, 233, 0.1);
+            --card-shadow-hover: 0 8px 30px rgba(14, 165, 233, 0.2), 0 0 0 1px rgba(14, 165, 233, 0.3);
+            --glow: 0 0 20px rgba(14, 165, 233, 0.3);
+            --gradient-accent: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+        }
+
+        /* ============================================
+           Base Styles
+           ============================================ */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-sans), sans-serif;
+        }
+
+        /* Typography */
+        .font-serif {
+            font-family: var(--font-serif), serif;
+        }
+
+        /* Navbar */
+        #navbar {
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-link {
+            color: var(--text);
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: var(--hero-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 Q25,50 50,25 T100,50 L100,100 L0,100 Z" fill="rgba(26, 36, 86, 0.03)" /></svg>');
+            background-size: 100% 100%;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        [data-theme="cyber"] .hero-section::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(14,165,233,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.8;
+        }
+
+        /* Cards */
+        .course-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .course-card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-4px);
+        }
+
+        [data-theme="cyber"] .course-card:hover {
+            box-shadow: var(--card-shadow-hover), var(--glow);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--gradient-accent);
+            color: white;
+            border-radius: var(--btn-radius);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        [data-theme="cyber"] .btn-primary:hover {
+            box-shadow: var(--glow);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: var(--btn-radius);
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        [data-theme="cyber"] .theme-toggle:hover {
+            box-shadow: var(--glow);
+        }
+
+        .theme-toggle .icon-inkwell,
+        .theme-toggle .icon-cyber {
+            position: absolute;
+            font-size: 1.25rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="inkwell"] .theme-toggle .icon-inkwell {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        [data-theme="inkwell"] .theme-toggle .icon-cyber {
+            opacity: 0;
+            transform: rotate(180deg);
+        }
+
+        [data-theme="cyber"] .theme-toggle .icon-inkwell {
+            opacity: 0;
+            transform: rotate(-180deg);
+        }
+
+        [data-theme="cyber"] .theme-toggle .icon-cyber {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        /* Theme Label */
+        .theme-label {
+            position: fixed;
+            bottom: 5.5rem;
+            right: 1.25rem;
+            z-index: 100;
+            background: var(--surface);
+            color: var(--text);
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        /* Section backgrounds */
+        .section-alt {
+            background: var(--bg-alt);
+        }
+
+        .section-white {
+            background: var(--surface);
+        }
+
+        /* Badge styles */
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .badge-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .badge-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .badge-surface {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        /* Cyber theme specific effects */
+        [data-theme="cyber"] .course-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="cyber"] .course-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            transition: left 0.5s ease;
+        }
+
+        [data-theme="cyber"] .course-card:hover::after {
+            left: 100%;
+        }
+
+        [data-theme="cyber"] .hero-title .accent-word {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Filter buttons */
+        .filter-btn {
+            background: var(--bg-alt);
+            color: var(--text);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: var(--surface);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Star rating */
+        .star-rating {
+            color: #fbbf24;
+        }
+
+        /* Link styles */
+        .link-accent {
+            color: var(--accent);
+        }
+
+        .link-accent:hover {
+            color: var(--accent-hover);
+        }
+
+        /* Image overlays */
+        .card-image {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            transition: transform 0.5s ease;
+        }
+
+        .course-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-dark, var(--primary));
+            color: white;
+        }
+
+        [data-theme="cyber"] footer {
+            background: linear-gradient(180deg, var(--bg) 0%, #020617 100%);
+            border-top: 1px solid var(--border);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(14, 165, 233, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(14, 165, 233, 0.6);
+            }
+        }
+
+        [data-theme="cyber"] .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* Mobile menu */
+        #mobile-menu {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fa fa-pen-fancy icon-inkwell"></i>
+        <i class="fa fa-bolt icon-cyber"></i>
+    </button>
+    <div class="theme-label" id="themeLabel">文艺复古</div>
+
+    <!-- 导航栏 -->
+    <header class="fixed w-full z-50" id="navbar">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 md:h-20">
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center">
+                        <span class="font-serif font-bold text-2xl md:text-3xl" style="color: var(--primary)">Inkwell</span>
+                    </a>
+                </div>
+                
+                <!-- 桌面导航 -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#courses" class="nav-link font-medium">课程</a>
+                    <a href="#mentors" class="nav-link font-medium">导师</a>
+                    <a href="#writing-plan" class="nav-link font-medium">写作计划</a>
+                    <a href="#community" class="nav-link font-medium">社区</a>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="hidden md:block nav-link font-medium">登录</a>
+                    <a href="#" class="hidden md:block btn-primary px-4 py-2 font-medium">注册</a>
+                    
+                    <!-- 移动端菜单按钮 -->
+                    <button type="button" id="mobile-menu-button" class="md:hidden focus:outline-none" style="color: var(--text)">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <div class="px-4 py-3 space-y-3">
+                <a href="#courses" class="block nav-link font-medium">课程</a>
+                <a href="#mentors" class="block nav-link font-medium">导师</a>
+                <a href="#writing-plan" class="block nav-link font-medium">写作计划</a>
+                <a href="#community" class="block nav-link font-medium">社区</a>
+                <div class="flex space-x-4 pt-2">
+                    <a href="#" class="block nav-link font-medium">登录</a>
+                    <a href="#" class="block btn-primary px-4 py-2 font-medium">注册</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区 -->
+    <section class="hero-section pt-24 md:pt-32 pb-16 md:pb-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="hero-title text-[clamp(2.5rem,5vw,4rem)] font-serif font-bold leading-tight mb-6" style="color: var(--text)">
+                        释放你的<span class="accent-word italic" style="color: var(--accent)">创意</span>，<br>
+                        书写属于你的故事
+                    </h1>
+                    <p class="text-lg md:text-xl mb-8 max-w-xl" style="color: var(--text-muted)">
+                        专为年轻写作者和自由职业者打造的在线学习平台，提供专业课程、个性化指导和社区支持，助你实现写作梦想。
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#courses" class="btn-primary px-6 py-3 text-center font-medium">
+                            探索课程
+                        </a>
+                        <a href="#" class="btn-outline px-6 py-3 text-center font-medium">免费试学</a>
+                    </div>
+                    <div class="mt-8 flex items-center">
+                        <div class="flex -space-x-2">
+                            <img src="https://picsum.photos/id/64/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2" style="border-color: var(--bg)">
+                            <img src="https://picsum.photos/id/65/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2" style="border-color: var(--bg)">
+                            <img src="https://picsum.photos/id/66/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2" style="border-color: var(--bg)">
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm" style="color: var(--text-muted)">
+                                <span class="font-semibold" style="color: var(--text)">10,000+</span> 写作者已加入
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="relative z-10" style="transform: translateY(0); transition: transform 0.5s ease-in-out;">
+                        <img src="https://picsum.photos/id/24/600/400" alt="创意写作" class="rounded-lg w-full" style="box-shadow: var(--card-shadow)">
+                        <div class="absolute -bottom-6 -left-6 p-4 rounded-lg transform rotate-3" style="background: var(--surface); box-shadow: var(--card-shadow)">
+                            <p class="font-serif italic" style="color: var(--text)">"每个故事都值得被听见"</p>
+                        </div>
+                    </div>
+                    <div class="absolute top-1/4 -right-4 w-24 h-24 rounded-full blur-2xl -z-10" style="background: var(--primary); opacity: 0.1"></div>
+                    <div class="absolute bottom-1/4 -left-4 w-32 h-32 rounded-full blur-2xl -z-10" style="background: var(--accent); opacity: 0.1"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 精选写作课程展示区 -->
+    <section id="courses" class="py-16 md:py-24 section-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-serif font-bold mb-4" style="color: var(--text)">精选写作课程</h2>
+                <p class="text-lg max-w-2xl mx-auto" style="color: var(--text-muted)">
+                    从小说到剧本，从散文到诗歌，找到适合你的创意写作课程，提升写作技巧，释放创作潜能。
+                </p>
+            </div>
+            
+            <!-- 课程分类筛选 -->
+            <div class="flex flex-wrap justify-center gap-3 mb-10">
+                <button class="filter-btn active">全部</button>
+                <button class="filter-btn">小说</button>
+                <button class="filter-btn">散文</button>
+                <button class="filter-btn">剧本</button>
+                <button class="filter-btn">诗歌</button>
+                <button class="filter-btn">非虚构</button>
+            </div>
+            
+            <!-- 课程卡片网格 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 课程卡片 1 -->
+                <div class="course-card overflow-hidden">
+                    <div class="card-image">
+                        <img src="https://picsum.photos/id/42/600/400" alt="小说创作基础" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4 badge badge-accent">初级</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold mb-2" style="color: var(--text)">小说创作基础：角色与情节构建</h3>
+                        <p class="mb-4 line-clamp-3" style="color: var(--text-muted)">
+                            掌握小说创作的核心要素，学习如何塑造立体的角色和引人入胜的情节，为你的故事打下坚实基础。
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/64/100/100" alt="李明老师" class="w-10 h-10 rounded-full mr-3">
+                            <span class="text-sm" style="color: var(--text-muted)">李乐明 · 资深小说家</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <i class="fa fa-star star-rating mr-1"></i>
+                                <span class="text-sm" style="color: var(--text-muted)">4.9 (128人评价)</span>
+                            </div>
+                            <a href="#" class="link-accent font-medium">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片 2 -->
+                <div class="course-card overflow-hidden">
+                    <div class="card-image">
+                        <img src="https://picsum.photos/id/24/600/400" alt="散文写作艺术" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4 badge badge-primary">中级</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold mb-2" style="color: var(--text)">散文写作艺术：情感与意象表达</h3>
+                        <p class="mb-4 line-clamp-3" style="color: var(--text-muted)">
+                            探索散文的美学世界，学习如何捕捉生活中的细微情感，运用生动的意象和独特的语言风格表达内心世界。
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/65/100/100" alt="张晓风老师" class="w-10 h-10 rounded-full mr-3">
+                            <span class="text-sm" style="color: var(--text-muted)">张晓黎 · 散文作家</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <i class="fa fa-star star-rating mr-1"></i>
+                                <span class="text-sm" style="color: var(--text-muted)">4.8 (96人评价)</span>
+                            </div>
+                            <a href="#" class="link-accent font-medium">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片 3 -->
+                <div class="course-card overflow-hidden">
+                    <div class="card-image">
+                        <img src="https://picsum.photos/id/342/600/400" alt="剧本创作工作坊" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4 badge badge-secondary">高级</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold mb-2" style="color: var(--text)">剧本创作工作坊：从创意到银幕</h3>
+                        <p class="mb-4 line-clamp-3" style="color: var(--text-muted)">
+                            深入了解剧本结构和创作技巧，学习如何构建戏剧冲突、塑造对话和设计场景，为影视和舞台创作精彩剧本。
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/66/100/100" alt="王导演" class="w-10 h-10 rounded-full mr-3">
+                            <span class="text-sm" style="color: var(--text-muted)">王浩然 · 编剧兼导演</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <i class="fa fa-star star-rating mr-1"></i>
+                                <span class="text-sm" style="color: var(--text-muted)">4.9 (75人评价)</span>
+                            </div>
+                            <a href="#" class="link-accent font-medium">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片 4 -->
+                <div class="course-card overflow-hidden">
+                    <div class="card-image">
+                        <img src="https://picsum.photos/id/106/600/400" alt="诗歌创作入门" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4 badge badge-surface">入门</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold mb-2" style="color: var(--text)">诗歌创作入门：意象与韵律</h3>
+                        <p class="mb-4 line-clamp-3" style="color: var(--text-muted)">
+                            探索诗歌的独特表达方式，学习如何运用意象、隐喻和韵律创作富有感染力的诗歌作品，表达深刻情感。
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/67/100/100" alt="林诗韵老师" class="w-10 h-10 rounded-full mr-3">
+                            <span class="text-sm" style="color: var(--text-muted)">林诗韵 · 诗人</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <i class="fa fa-star star-rating mr-1"></i>
+                                <span class="text-sm" style="color: var(--text-muted)">4.7 (112人评价)</span>
+                            </div>
+                            <a href="#" class="link-accent font-medium">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片 5 -->
+                <div class="course-card overflow-hidden">
+                    <div class="card-image">
+                        <img src="https://picsum.photos/id/200/600/400" alt="非虚构写作" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4 badge badge-primary">中级</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold mb-2" style="color: var(--text)">非虚构写作：真实故事的艺术呈现</h3>
+                        <p class="mb-4 line-clamp-3" style="color: var(--text-muted)">
+                            学习如何挖掘真实故事的核心，运用叙事技巧和文学手法，将现实生活中的人物和事件转化为引人入胜的非虚构作品。
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/68/100/100" alt="陈纪实老师" class="w-10 h-10 rounded-full mr-3">
+                            <span class="text-sm" style="color: var(--text-muted)">陈实 · 纪实作家</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <i class="fa fa-star star-rating mr-1"></i>
+                                <span class="text-sm" style="color: var(--text-muted)">4.8 (87人评价)</span>
+                            </div>
+                            <a href="#" class="link-accent font-medium">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片 6 -->
+                <div class="course-card overflow-hidden">
+                    <div class="card-image">
+                        <img src="https://picsum.photos/id/239/600/400" alt="创意写作工作坊" class="w-full h-48 object-cover">
+                        <div class="absolute top-4 left-4 badge badge-accent">进阶</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-serif font-bold mb-2" style="color: var(--text)">创意写作工作坊：突破创作瓶颈</h3>
+                        <p class="mb-4 line-clamp-3" style="color: var(--text-muted)">
+                            针对有一定写作经验的创作者，通过系统训练和导师指导，突破创作瓶颈，找到个人独特的写作风格和声音。
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/69/100/100" alt="赵导师" class="w-10 h-10 rounded-full mr-3">
+                            <span class="text-sm" style="color: var(--text-muted)">赵文心 · 写作导师</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <i class="fa fa-star star-rating mr-1"></i>
+                                <span class="text-sm" style="color: var(--text-muted)">4.9 (64人评价)</span>
+                            </div>
+                            <a href="#" class="link-accent font-medium">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="#" class="btn-outline px-8 py-3 inline-block font-medium">查看全部课程</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导师团队 -->
+    <section id="mentors" class="py-16 md:py-24 section-alt">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-serif font-bold mb-4" style="color: var(--text)">专业导师团队</h2>
+                <p class="text-lg max-w-2xl mx-auto" style="color: var(--text-muted)">
+                    来自各行各业的资深作家和编辑，为你提供专业的写作指导和个性化反馈。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- 导师 1 -->
+                <div class="text-center group">
+                    <div class="relative inline-block mb-4">
+                        <img src="https://picsum.photos/id/64/200/200" alt="李乐明" class="w-32 h-32 rounded-full mx-auto object-cover border-4" style="border-color: var(--border)">
+                        <div class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: var(--accent)">
+                            <i class="fa fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1" style="color: var(--text)">李乐明</h3>
+                    <p class="text-sm mb-2" style="color: var(--accent)">资深小说家</p>
+                    <p class="text-sm" style="color: var(--text-muted)">出版小说12部，获多项文学奖项</p>
+                </div>
+                
+                <!-- 导师 2 -->
+                <div class="text-center group">
+                    <div class="relative inline-block mb-4">
+                        <img src="https://picsum.photos/id/65/200/200" alt="张晓黎" class="w-32 h-32 rounded-full mx-auto object-cover border-4" style="border-color: var(--border)">
+                        <div class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: var(--accent)">
+                            <i class="fa fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1" style="color: var(--text)">张晓黎</h3>
+                    <p class="text-sm mb-2" style="color: var(--accent)">散文作家</p>
+                    <p class="text-sm" style="color: var(--text-muted)">散文集《晨光》获全国优秀散文奖</p>
+                </div>
+                
+                <!-- 导师 3 -->
+                <div class="text-center group">
+                    <div class="relative inline-block mb-4">
+                        <img src="https://picsum.photos/id/66/200/200" alt="王浩然" class="w-32 h-32 rounded-full mx-auto object-cover border-4" style="border-color: var(--border)">
+                        <div class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: var(--accent)">
+                            <i class="fa fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1" style="color: var(--text)">王浩然</h3>
+                    <p class="text-sm mb-2" style="color: var(--accent)">编剧兼导演</p>
+                    <p class="text-sm" style="color: var(--text-muted)">执导电影获国际电影节提名</p>
+                </div>
+                
+                <!-- 导师 4 -->
+                <div class="text-center group">
+                    <div class="relative inline-block mb-4">
+                        <img src="https://picsum.photos/id/67/200/200" alt="林诗韵" class="w-32 h-32 rounded-full mx-auto object-cover border-4" style="border-color: var(--border)">
+                        <div class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: var(--accent)">
+                            <i class="fa fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1" style="color: var(--text)">林诗韵</h3>
+                    <p class="text-sm mb-2" style="color: var(--accent)">诗人</p>
+                    <p class="text-sm" style="color: var(--text-muted)">诗集《月下独白》畅销十万册</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 写作计划 -->
+    <section id="writing-plan" class="py-16 md:py-24 section-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-serif font-bold mb-6" style="color: var(--text)">个性化写作计划</h2>
+                    <p class="text-lg mb-8" style="color: var(--text-muted)">
+                        根据你的写作水平、兴趣方向和时间安排，为你量身定制专属的写作学习计划，让每一步都清晰可见。
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style="background: var(--accent)">
+                                <i class="fa fa-clipboard-list text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1" style="color: var(--text)">能力评估</h3>
+                                <p class="text-sm" style="color: var(--text-muted)">通过专业测试了解你的写作水平和风格偏好</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style="background: var(--primary)">
+                                <i class="fa fa-calendar text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1" style="color: var(--text)">计划制定</h3>
+                                <p class="text-sm" style="color: var(--text-muted)">AI 智能生成适合你的学习路径和时间安排</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style="background: var(--secondary)">
+                                <i class="fa fa-chart-line text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1" style="color: var(--text)">进度跟踪</h3>
+                                <p class="text-sm" style="color: var(--text-muted)">实时记录学习进度，及时调整学习计划</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style="background: var(--accent)">
+                                <i class="fa fa-trophy text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1" style="color: var(--text)">成果展示</h3>
+                                <p class="text-sm" style="color: var(--text-muted)">完成阶段目标后获得证书和作品展示机会</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2">
+                    <div class="rounded-lg p-8" style="background: var(--bg-alt); border: 1px solid var(--border)">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium" style="color: var(--text)">本周进度</span>
+                                <span class="text-sm font-bold" style="color: var(--accent)">75%</span>
+                            </div>
+                            <div class="w-full h-3 rounded-full" style="background: var(--border)">
+                                <div class="h-3 rounded-full" style="width: 75%; background: var(--gradient-accent)"></div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium" style="color: var(--text)">本月目标</span>
+                                <span class="text-sm font-bold" style="color: var(--primary)">60%</span>
+                            </div>
+                            <div class="w-full h-3 rounded-full" style="background: var(--border)">
+                                <div class="h-3 rounded-full" style="width: 60%; background: var(--primary)"></div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium" style="color: var(--text)">季度计划</span>
+                                <span class="text-sm font-bold" style="color: var(--secondary)">40%</span>
+                            </div>
+                            <div class="w-full h-3 rounded-full" style="background: var(--border)">
+                                <div class="h-3 rounded-full" style="width: 40%; background: var(--secondary)"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6" style="border-top: 1px solid var(--border)">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm" style="color: var(--text-muted)">连续写作天数</span>
+                                <span class="text-2xl font-bold" style="color: var(--accent)">21</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm" style="color: var(--text-muted)">已完成课程</span>
+                                <span class="text-2xl font-bold" style="color: var(--primary)">8</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区 -->
+    <section id="community" class="py-16 md:py-24 section-alt">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-serif font-bold mb-4" style="color: var(--text)">写作社区</h2>
+                <p class="text-lg max-w-2xl mx-auto" style="color: var(--text-muted)">
+                    加入我们的写作社区，与志同道合的写作者交流心得，互相激励，共同成长。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="course-card p-6 text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: var(--accent)">
+                        <i class="fa fa-users text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" style="color: var(--text)">10,000+</h3>
+                    <p style="color: var(--text-muted)">活跃写作者</p>
+                </div>
+                
+                <div class="course-card p-6 text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: var(--primary)">
+                        <i class="fa fa-book text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" style="color: var(--text)">50,000+</h3>
+                    <p style="color: var(--text-muted)">原创作品</p>
+                </div>
+                
+                <div class="course-card p-6 text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: var(--secondary)">
+                        <i class="fa fa-comments text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" style="color: var(--text)">100,000+</h3>
+                    <p style="color: var(--text-muted)">互动评论</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 md:py-24" style="background: var(--gradient-accent)">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-serif font-bold text-white mb-4">准备好开始你的写作之旅了吗？</h2>
+            <p class="text-lg text-white/80 max-w-2xl mx-auto mb-8">
+                立即注册，免费体验我们的精选课程，开启你的创意写作之旅。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="#" class="bg-white px-8 py-3 rounded-md font-medium transition-all duration-300 hover:bg-white/90" style="color: var(--primary)">
+                    免费注册
+                </a>
+                <a href="#" class="border-2 border-white text-white px-8 py-3 rounded-md font-medium transition-all duration-300 hover:bg-white/10">
+                    了解更多
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="font-serif font-bold text-xl mb-4">Inkwell</h3>
+                    <p class="text-white/70 text-sm">专为年轻写作者打造的在线学习平台，让每个人都能找到属于自己的写作声音。</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">课程</h4>
+                    <ul class="space-y-2 text-white/70 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">小说创作</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">散文写作</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">剧本创作</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">诗歌创作</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">资源</h4>
+                    <ul class="space-y-2 text-white/70 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">写作工具</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">写作指南</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">优秀作品</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">常见问题</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">联系我们</h4>
+                    <ul class="space-y-2 text-white/70 text-sm">
+                        <li><i class="fa fa-envelope mr-2"></i>hello@inkwell.com</li>
+                        <li><i class="fa fa-phone mr-2"></i>+86 123 4567 8900</li>
+                        <li class="flex space-x-4 mt-4">
+                            <a href="#" class="text-white/70 hover:text-white transition-colors"><i class="fa fa-weixin text-lg"></i></a>
+                            <a href="#" class="text-white/70 hover:text-white transition-colors"><i class="fa fa-weibo text-lg"></i></a>
+                            <a href="#" class="text-white/70 hover:text-white transition-colors"><i class="fa fa-twitter text-lg"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 text-center text-white/50 text-sm" style="border-top: 1px solid rgba(255,255,255,0.1)">
+                <p>&copy; 2024 Inkwell. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================
+        // Theme Switching System
+        // ============================================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeLabel = document.getElementById('themeLabel');
+        const html = document.documentElement;
+        
+        const themes = {
+            inkwell: { name: '文艺复古', icon: 'fa-pen-fancy' },
+            cyber: { name: '现代科技', icon: 'fa-bolt' }
+        };
+        
+        // Load saved theme or default to inkwell
+        const savedTheme = localStorage.getItem('theme') || 'inkwell';
+        html.setAttribute('data-theme', savedTheme);
+        updateThemeLabel(savedTheme);
+        
+        function updateThemeLabel(theme) {
+            themeLabel.textContent = themes[theme].name;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'inkwell' ? 'cyber' : 'inkwell';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeLabel(newTheme);
+        });
+        
+        // Hide theme label after 3 seconds
+        setTimeout(() => {
+            themeLabel.style.opacity = '0';
+            themeLabel.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                themeLabel.style.display = 'none';
+            }, 500);
+        }, 3000);
+        
+        // ============================================
+        // Mobile Menu Toggle
+        // ============================================
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // ============================================
+        // Filter Buttons
+        // ============================================
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+        
+        // ============================================
+        // Navbar scroll effect
+        // ============================================
+        let lastScroll = 0;
+        const navbar = document.getElementById('navbar');
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)';
+            } else {
+                navbar.style.boxShadow = 'none';
+            }
+            
+            lastScroll = currentScroll;
+        });
+        
+        // ============================================
+        // Smooth scroll for anchor links
+        // ============================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile menu if open
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
