@@ -13,4 +13,8 @@ cd ../..
 cd apps/web
 npx next build
 
+echo "Creating symlink for .next output..."
+cd ..
+ln -sf apps/web/.next .next
+
 echo "Build completed successfully!"
