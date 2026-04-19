@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+.turbo/
+
+# Environment
+.env.local
+.env.production.local
+.env.*.local
+
+# Database
+*.db
+*.db-journal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.qoder/
+
+# Logs
+*.log
+logs/
+
+# Uploads
+uploads/
+
+# Deploy packages
+deploy-package/
+deploy-package.tar.gz
+deploy-package.zip
