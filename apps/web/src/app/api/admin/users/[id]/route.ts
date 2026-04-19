@@ -42,7 +42,7 @@ export async function GET(
       displayName: user.profile?.displayName || "",
       avatarUrl: user.profile?.avatarUrl || "",
       bio: user.profile?.bio || "",
-      roles: user.roles.map((ur) => ({
+      roles: user.roles.map((ur: { role: { id: string; name: string; displayName: string } }) => ({
         id: ur.role.id,
         name: ur.role.name,
         displayName: ur.role.displayName,
