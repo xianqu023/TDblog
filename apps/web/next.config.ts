@@ -21,6 +21,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'react-icons'],
+    forceSwcTransforms: false,
+  },
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      { module: /node_modules/ },
+    ];
+    return config;
+  },
 };
 
 export default withNextIntl(nextConfig);
