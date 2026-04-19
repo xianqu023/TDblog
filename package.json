@@ -6,6 +6,7 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "build:vercel": "bash scripts/build-vercel.sh",
+    "prebuild": "cd packages/database && npx prisma generate",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "start": "bash scripts/start-dev.sh",

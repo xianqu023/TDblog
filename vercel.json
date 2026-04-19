@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm build:vercel",
+  "buildCommand": "cd apps/web && npx next build",
   "installCommand": "pnpm install",
   "env": {
     "NODE_ENV": "production",
