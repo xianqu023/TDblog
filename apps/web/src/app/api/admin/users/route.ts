@@ -59,7 +59,7 @@ export async function GET(request: Request) {
     prisma.user.count({ where }),
   ]);
 
-  const formattedUsers = users.map((user) => ({
+  const formattedUsers = users.map((user: any) => ({
     id: user.id,
     username: user.username,
     email: user.email,
