@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "DATABASE_URL=${DATABASE_URL:-postgresql://placeholder} cd packages/database && npx prisma generate && cd ../.. && cd apps/web && npx next build",
+  "buildCommand": "bash scripts/build-vercel.sh",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install",
   "env": {
