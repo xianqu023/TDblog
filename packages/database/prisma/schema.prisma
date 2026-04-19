@@ -10,7 +10,7 @@ generator client {
 // After changing, run: npx prisma generate && npx prisma db push
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

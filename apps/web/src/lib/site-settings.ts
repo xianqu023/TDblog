@@ -25,14 +25,14 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     }
 
     return {
-      siteName: settingsMap["siteName"] || "My Blog",
+      siteName: settingsMap["siteName"] || process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
       siteDescription: settingsMap["siteDescription"] || "一个个人博客平台",
       logoUrl: settingsMap["logoUrl"] || "",
     };
   } catch (error) {
     console.error("Failed to get site settings:", error);
     return {
-      siteName: "My Blog",
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
       siteDescription: "一个个人博客平台",
       logoUrl: "",
     };
