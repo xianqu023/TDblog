@@ -20,9 +20,9 @@
     ↓
 Cloudflare DNS (域名解析)
     ↓
-Cloudflare CDN (全球加速 + 缓存)
+Cloudflare CDN (全球加速 + 缓存) ← 免费版提供全球 300+ 节点
     ↓
-Vercel Edge Network (应用服务器)
+Vercel Edge Network (应用服务器) ← 免费版单区域部署
     ↓
 PostgreSQL 数据库 (外部数据库服务)
 ```
@@ -32,10 +32,19 @@ PostgreSQL 数据库 (外部数据库服务)
 - **前端框架**: Next.js 16.2.4 + Turbopack
 - **数据库**: PostgreSQL + Prisma ORM
 - **认证**: NextAuth.js
-- **部署平台**: Vercel
-- **CDN**: Cloudflare
+- **部署平台**: Vercel (免费版)
+- **CDN**: Cloudflare (免费版，全球加速)
 - **国际化**: next-intl
 - **AI 功能**: OpenAI API 集成
+
+### Vercel 免费版说明
+
+- ✅ 自动 HTTPS 证书
+- ✅ 全球 CDN 分发
+- ✅ 每月 100GB 带宽
+- ✅ 无限个人项目
+- ⚠️ 单区域部署（自动选择最优区域）
+- 💡 **通过 Cloudflare CDN 实现全球加速**，弥补单区域限制
 
 ---
 
