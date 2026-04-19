@@ -8,6 +8,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"/..
 
+# 加载 conf.ini 配置
+if [ -f "conf.ini" ]; then
+    source scripts/load-config.sh
+else
+    echo -e "${YELLOW}⚠️ 配置文件 conf.ini 不存在，使用默认配置${NC}"
+fi
+
 # 创建日志目录
 mkdir -p logs/pm2
 mkdir -p logs/web

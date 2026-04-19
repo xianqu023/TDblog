@@ -85,7 +85,7 @@ if [ -d "packages/database/node_modules/.prisma" ]; then
 fi
 
 # Copy environment template
-cp .env.example "${OUTPUT_DIR}/.env"
+cp conf.ini.example "${OUTPUT_DIR}/conf.ini"
 
 # Step 6: Create startup script
 echo -e "\n${BLUE}[6/8] 创建启动脚本...${NC}"
@@ -115,19 +115,19 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
-# Check .env file
-if [ ! -f ".env" ]; then
-    echo -e "${YELLOW}警告: .env 文件不存在，正在创建...${NC}"
-    if [ -f ".env.example" ]; then
-        cp .env.example .env
+# Check conf.ini file
+if [ ! -f "conf.ini" ]; then
+    echo -e "${YELLOW}警告: conf.ini 文件不存在，正在创建...${NC}"
+    if [ -f "conf.ini.example" ]; then
+        cp conf.ini.example conf.ini
     else
-        echo -e "${RED}错误: 找不到 .env.example${NC}"
+        echo -e "${RED}错误: 找不到 conf.ini.example${NC}"
         exit 1
     fi
 fi
 
-# Load environment variables
-export NODE_ENV=production
+# Load environment variables from conf.ini
+source scripts/load-config.sh 2>/dev/null || true
 
 # Run database migrations if needed
 if command -v npx &> /dev/null; then
@@ -184,14 +184,25 @@ cat > "${OUTPUT_DIR}/README.md" << README
 ## 快速开始
 
 ### 1. 配置环境
-编辑 \`.env\` 文件，配置数据库等参数：
+编辑 \`conf.ini\` 文件，配置数据库等参数：
 
-\`\`\`bash
-DATABASE_URL="file:./data/blog.db"
-NEXTAUTH_SECRET="your-secret-key"
-NEXTAUTH_URL="http://localhost:3000"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-NEXT_PUBLIC_SITE_NAME="你的网站名称"
+\`\`\`ini
+[database]
+provider = postgresql
+url = postgresql://user:password@localhost:5432/blog
+
+[server]
+port = 3000
+host = 0.0.0.0
+node_env = production
+
+[auth]
+secret = your-secret-key-change-in-production
+url = http://localhost:3000
+
+[site]
+name = My Blog
+url = http://localhost:3000
 \`\`\`
 
 ### 2. 启动服务
@@ -217,7 +228,7 @@ bash start.sh
 ├── server.js          # 主服务文件
 ├── start.sh           # 启动脚本
 ├── stop.sh            # 停止脚本
-├── .env               # 环境配置
+├── conf.ini           # 配置文件
 ├── .next/             # 构建产物
 ├── public/            # 静态资源
 ├── uploads/           # 上传文件

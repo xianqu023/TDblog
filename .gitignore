@@ -12,6 +12,9 @@ dist/
 .env.production.local
 .env.*.local
 
+# Config (contains sensitive data)
+conf.ini
+
 # Database
 *.db
 *.db-journal
