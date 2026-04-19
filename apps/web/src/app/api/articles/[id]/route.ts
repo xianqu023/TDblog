@@ -176,8 +176,8 @@ export async function PUT(
     });
 
     // 更新或创建翻译
-    const existingTranslation = existingArticle.translations.find(
-      (t) => t.locale === locale
+    const existingTranslation = (existingArticle.translations as any[]).find(
+      (t: any) => t.locale === locale
     );
 
     if (existingTranslation) {
