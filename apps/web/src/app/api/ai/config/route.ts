@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       include: { roles: { include: { role: true } } },
     });
 
-    const isAdmin = user?.roles.some((ur) => ur.role.name === "admin");
+    const isAdmin = user?.roles.some((ur: { role: { name: string } }) => ur.role.name === "admin");
     if (!isAdmin) {
       return NextResponse.json({ success: false, message: "无权限" }, { status: 403 });
     }
