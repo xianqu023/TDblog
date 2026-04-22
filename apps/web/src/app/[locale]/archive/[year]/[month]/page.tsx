@@ -1,8 +1,6 @@
-import { getWidgetConfig } from "@/app/actions/widget-config";
-import { DEFAULT_SIDEBAR_CONFIG } from "@/lib/sidebar-config";
+import { getTranslations } from "next-intl/server";
 import { type Locale } from "@/lib/i18n/config";
 import ChineseTwoColumnLayout from "@/components/layout/ChineseTwoColumnLayout";
-import { prisma } from "@blog/database";
 import { getSiteSettings } from "@/lib/site-settings";
 
 interface Article {
@@ -18,11 +16,12 @@ interface Article {
   price?: number;
 }
 
-async function getArticles(locale: Locale): Promise<Article[]> {
+async function getArticlesByYearMonth(locale: Locale, year: string, month: string): Promise<Article[]> {
   try {
-    const apiUrl = `http://localhost:3000/api/articles?locale=${locale}&status=PUBLISHED&page=1&limit=50`;
-    
-    const response = await fetch(apiUrl, { cache: "no-store" });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/articles?locale=${locale}&status=PUBLISHED&year=${year}&month=${month}&page=1&limit=50`,
+      { cache: "no-store" }
+    );
     
     if (!response.ok) {
       return [];
@@ -54,6 +53,7 @@ async function getArticles(locale: Locale): Promise<Article[]> {
       };
     });
   } catch (error) {
+    console.error("Failed to fetch articles:", error);
     return [];
   }
 }
@@ -114,38 +114,6 @@ async function getTags() {
   }
 }
 
-async function getAuthorInfo() {
-  try {
-    const adminUser = await prisma.user.findFirst({
-      where: {
-        roles: {
-          some: {
-            role: {
-              name: 'admin'
-            }
-          }
-        }
-      },
-      include: {
-        profile: true
-      }
-    });
-    
-    if (!adminUser) {
-      return null;
-    }
-    
-    return {
-      name: adminUser.profile?.displayName || adminUser.username,
-      bio: adminUser.profile?.bio || '热爱生活，热爱写作，分享技术与生活',
-      avatar: adminUser.profile?.avatarUrl || undefined,
-    };
-  } catch (error) {
-    console.error("Failed to fetch author info:", error);
-    return null;
-  }
-}
-
 async function getFriendLinks() {
   // FriendLink 模型暂不存在，返回空数组
   return [];
@@ -180,39 +148,77 @@ async function getArchives() {
   }
 }
 
-export default async function ChineseHomePage({
+export default async function ArchivePage({
   params,
 }: {
-  params: Promise<{ locale: Locale }>;
+  params: Promise<{ locale: Locale; year: string; month: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, year, month } = await params;
+  const t = await getTranslations("archive");
   
   const siteSettings = await getSiteSettings();
   
-  const [articles, categories, tags, authorInfo, friendLinks, archives] = await Promise.all([
-    getArticles(locale),
+  const [articles, categories, tags, friendLinks, archives] = await Promise.all([
+    getArticlesByYearMonth(locale, year, month),
     getCategories(),
     getTags(),
-    getAuthorInfo(),
     getFriendLinks(),
     getArchives()
   ]);
-  
-  const widgetConfig = await getWidgetConfig();
-  const widgets = widgetConfig?.home || DEFAULT_SIDEBAR_CONFIG.home;
+
+  const monthNames = [
+    '一月', '二月', '三月', '四月', '五月', '六月',
+    '七月', '八月', '九月', '十月', '十一月', '十二月'
+  ];
+  const monthName = monthNames[parseInt(month) - 1] || month;
 
   return (
     <ChineseTwoColumnLayout
       articles={articles}
       categories={categories}
       tags={tags}
-      authorInfo={authorInfo || undefined}
       friendLinks={friendLinks}
       archives={archives}
       siteSettings={siteSettings}
     >
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">首页</h1>
+        <h1 className="text-3xl font-bold mb-8">{year}年{monthName}归档</h1>
+        
+        {articles.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-600">该月份暂无文章</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {articles.map((article) => (
+              <div key={article.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                {article.coverImage && (
+                  <div className="mb-4">
+                    <img 
+                      src={article.coverImage} 
+                      alt={article.title} 
+                      className="w-full h-48 object-cover rounded"
+                    />
+                  </div>
+                )}
+                <h2 className="text-xl font-bold mb-2">
+                  <a href={`/zh/articles/${article.slug}`} className="hover:text-blue-600">
+                    {article.title}
+                  </a>
+                </h2>
+                {article.excerpt && (
+                  <p className="text-gray-600 mb-4">{article.excerpt}</p>
+                )}
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('zh-CN') : ''}</span>
+                  {article.viewCount && (
+                    <span>阅读 {article.viewCount}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </ChineseTwoColumnLayout>
   );

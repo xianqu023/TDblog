@@ -79,7 +79,7 @@ export default function EditArticlePage({ params }: EditArticlePageProps) {
         setStatus(article.status || "draft");
         setIsPremium(article.isPremium || false);
         setPremiumPrice(article.premiumPrice?.toString() || "");
-        setTags(article.tags?.map((t: ArticleTag) => t.tag.name).join(", ") || "");
+        setTags(article.tags?.filter((t: ArticleTag) => t && t.tag).map((t: ArticleTag) => t.tag.name).join(", ") || "");
         setCategoryIds(article.categories?.map((c: ArticleCategory) => c.categoryId) || []);
 
         setDownloadEnabled(article.downloadEnabled || false);

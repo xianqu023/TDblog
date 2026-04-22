@@ -167,7 +167,7 @@ async function getHotArticles(locale: Locale): Promise<Article[]> {
         viewCount: article.viewCount || 0,
         views: article.viewCount || 0, // 兼容 ArticleCardView
         category: article.categories?.[0]?.category?.name,
-        tags: article.tags?.map((at: any) => at.tag?.name || "") || [],
+        tags: article.tags?.filter((at: any) => at && at.tag).map((at: any) => at.tag?.name || "") || [],
         isPremium: article.isPremium || false,
         price: article.premiumPrice,
       };
@@ -191,15 +191,15 @@ async function getArchives(): Promise<Array<{ year: number; month: number; count
     
     const data = await response.json();
     
-    if (!data.success || !data.data || !Array.isArray(data.data)) {
+    if (!data.success || !data.data || !data.data.archives) {
       return [];
     }
     
-    return data.data.map((archive: any) => ({
+    return data.data.archives.map((archive: any) => ({
       year: archive.year,
       month: archive.month,
       count: archive.count,
-      slug: `${archive.year}/${archive.month}`,
+      slug: `${archive.year}/${String(archive.month).padStart(2, '0')}`,
     }));
   } catch (error) {
     console.error("Failed to fetch archives:", error);

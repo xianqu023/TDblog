@@ -42,8 +42,8 @@ async function getArticles(locale: Locale): Promise<Article[]> {
         coverImage: article.coverImage,
         publishedAt: article.publishedAt || article.createdAt,
         viewCount: article.viewCount || 0,
-        tags: article.tags?.map((tag: any) => ({
-          name: tag.name,
+        tags: article.tags?.filter((tag: any) => tag && tag.name).map((tag: any) => ({
+          name: tag.name || "未命名标签",
           color: tag.color || "#6b7280",
         })) || [],
         isPremium: article.isPremium || false,
@@ -88,10 +88,26 @@ export default async function ArticlesPage({
     { cache: "no-store" }
   ).then(res => res.ok ? res.json() : { success: false, data: [] }).then(data => data.articles || []);
 
-  // friendLinks 和 archives API 可能不存在，使用空数组
+  // friendLinks API 可能不存在，使用空数组
   const friendLinks: Array<{ name: string; url: string }> = [];
   const authorInfo = undefined;
-  const archives: any[] = [];
+  
+  // 获取归档数据
+  const archives = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/archives`,
+    { cache: "no-store" }
+  ).then(res => res.ok ? res.json() : { success: false, data: { archives: [] } })
+    .then(data => {
+      if (data.success && data.data && data.data.archives) {
+        return data.data.archives.map((archive: any) => ({
+          year: archive.year,
+          month: archive.month,
+          count: archive.count,
+          slug: `${archive.year}/${String(archive.month).padStart(2, '0')}`
+        }));
+      }
+      return [];
+    });
 
   return (
     <ChineseTwoColumnLayout

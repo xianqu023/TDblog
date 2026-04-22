@@ -150,6 +150,8 @@ export async function GET(request: NextRequest) {
     const locale = searchParams.get("locale") || "zh";
     const categoryId = searchParams.get("categoryId");
     const category = searchParams.get("category"); // 支持分类 slug
+    const year = searchParams.get("year");
+    const month = searchParams.get("month");
 
     const where: any = {};
 
@@ -191,6 +193,25 @@ export async function GET(request: NextRequest) {
           },
         });
       }
+    }
+
+    // 按年月筛选
+    if (year && month) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+      
+      where.publishedAt = {
+        gte: startDate,
+        lte: endDate,
+      };
+    } else if (year) {
+      const startDate = new Date(parseInt(year), 0, 1);
+      const endDate = new Date(parseInt(year), 11, 31, 23, 59, 59, 999);
+      
+      where.publishedAt = {
+        gte: startDate,
+        lte: endDate,
+      };
     }
 
     const [articles, total] = await Promise.all([

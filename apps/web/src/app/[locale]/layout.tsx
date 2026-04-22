@@ -7,6 +7,7 @@ import PublicLayout from "@/components/PublicLayout";
 import { getSiteSettings } from "@/lib/site-settings";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import "@/styles/safari-optimizations.css";
 
 async function getMessagesForLocale(locale: Locale) {
   return (await import(`@/lib/i18n/locales/${locale}.json`)).default;

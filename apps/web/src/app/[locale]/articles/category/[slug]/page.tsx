@@ -48,8 +48,8 @@ async function getArticlesByCategory(locale: Locale, categorySlug: string): Prom
         coverImage: article.coverImage,
         publishedAt: article.publishedAt || article.createdAt,
         viewCount: article.viewCount || 0,
-        tags: article.tags?.map((tag: any) => ({
-          name: tag.name,
+        tags: article.tags?.filter((tag: any) => tag && tag.name).map((tag: any) => ({
+          name: tag.name || "未命名标签",
           color: tag.color || "#6b7280",
         })) || [],
         isPremium: article.isPremium || false,

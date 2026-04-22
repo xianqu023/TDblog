@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import ChineseTwoColumnLayout from "@/components/layout/ChineseTwoColumnLayout";
 import CommentSection from "@/components/public/CommentSection";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 async function getArticleBySlug(slug: string, locale: string) {
   try {
@@ -40,9 +41,9 @@ export default async function ArticleDetailPage({ params }: { params: { locale: 
     coverImage: article.coverImage,
     publishedAt: article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("zh-CN") : "未发布",
     viewCount: article.viewCount || 0,
-    tags: article.tags?.map((t: any) => ({
-      name: t.tag.name,
-      color: "#C41E3A",
+    tags: article.tags?.filter((t: any) => t && t.tag).map((t: any) => ({
+      name: t.tag?.name || "未命名标签",
+      color: t.tag?.color || "#C41E3A",
     })) || [],
     author: {
       name: article.author?.profile?.displayName || article.author?.username || "佚名",
@@ -138,8 +139,9 @@ export default async function ArticleDetailPage({ params }: { params: { locale: 
               prose-ul:my-4 prose-ol:my-4
               prose-li:text-gray-700
             "
-            dangerouslySetInnerHTML={{ __html: articleData.content }}
-          />
+          >
+            <MarkdownRenderer content={articleData.content} />
+          </div>
 
           {/* 作者信息 */}
           <div className="mt-12 pt-8 border-t border-gray-200">

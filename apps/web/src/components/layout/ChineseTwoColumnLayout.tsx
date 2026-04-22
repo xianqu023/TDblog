@@ -20,6 +20,7 @@ import {
   PhotoGallery,
 } from "@/components/sidebar";
 import { ChevronRight } from "lucide-react";
+import { detectSafari, getSafariOptimizations, applySafariFixes, type SafariFeatures } from "@/lib/safari-detect";
 
 interface ChineseTwoColumnLayoutProps {
   children: React.ReactNode;
@@ -102,6 +103,24 @@ export default function ChineseTwoColumnLayout({
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [articlesPerPage, setArticlesPerPage] = useState(8);
+  const [isSafari, setIsSafari] = useState(false);
+  const [safariFeatures, setSafariFeatures] = useState<SafariFeatures | null>(null);
+
+  // 检测 Safari 浏览器
+  useEffect(() => {
+    const features = detectSafari();
+    setIsSafari(features.isSafari);
+    setSafariFeatures(features);
+    
+    // 应用 Safari 修复
+    if (features.isSafari) {
+      const optimizations = getSafariOptimizations(features);
+      if (optimizations.enableStickyFallback) {
+        // 需要 sticky 回退方案
+        console.log('Safari detected, applying sticky fallback');
+      }
+    }
+  }, []);
 
   // 监听articles prop的变化，更新allArticles状态
   useEffect(() => {
@@ -191,7 +210,7 @@ export default function ChineseTwoColumnLayout({
             viewCount: article.viewCount || 0,
             views: article.viewCount || 0, // 兼容 ArticleCardView
             category: article.categories?.[0]?.category?.name,
-            tags: article.tags?.map((at: any) => at.tag?.name || "") || [],
+            tags: article.tags?.filter((at: any) => at && at.tag).map((at: any) => at.tag?.name || "") || [],
             isPremium: article.isPremium || false,
             isPinned: article.isPinned || false,
             price: article.premiumPrice,
@@ -204,6 +223,12 @@ export default function ChineseTwoColumnLayout({
         if (data.pagination && data.pagination.total) {
           setTotalPages(Math.ceil(data.pagination.total / articlesPerPage));
         }
+        
+        // 滚动到页面顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (data.success && data.articles && data.articles.length === 0 && page > 1) {
+        // 如果是空结果但不是第一页，尝试加载第一页
+        loadArticles(1);
       }
     } catch (error) {
       console.error('Failed to load articles:', error);
@@ -211,6 +236,26 @@ export default function ChineseTwoColumnLayout({
       setLoading(false);
     }
   };
+
+  // 初始化时加载总文章数
+  useEffect(() => {
+    const loadTotalArticles = async () => {
+      try {
+        const response = await fetch('/api/articles?page=1&limit=1&locale=zh&status=PUBLISHED');
+        const data = await response.json();
+        
+        if (data.success && data.pagination && data.pagination.total) {
+          setTotalPages(Math.ceil(data.pagination.total / articlesPerPage));
+        }
+      } catch (error) {
+        console.error('Failed to load total articles:', error);
+      }
+    };
+    
+    if (!isArticlePage) {
+      loadTotalArticles();
+    }
+  }, [articlesPerPage, isArticlePage]);
 
   // 分页导航函数
   const handlePageChange = (page: number) => {
@@ -332,17 +377,73 @@ export default function ChineseTwoColumnLayout({
                       上一页
                     </button>
                     
-                    {/* 页码按钮 */}
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        disabled={loading}
-                        className={`px-4 py-2 text-sm font-medium border-t border-b ${currentPage === page ? 'bg-[#C41E3A] text-white border-[#C41E3A]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} ${page === 1 ? '' : 'border-l'} ${page === totalPages ? '' : 'border-r'}`}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                    {/* 页码按钮 - 智能显示 */}
+                    {(() => {
+                      const pages = [];
+                      const maxVisible = 7; // 最多显示的页码按钮数
+                      
+                      if (totalPages <= maxVisible) {
+                        // 总页数较少，全部显示
+                        for (let i = 1; i <= totalPages; i++) {
+                          pages.push(i);
+                        }
+                      } else {
+                        // 总页数较多，智能显示
+                        if (currentPage <= 3) {
+                          // 当前页靠前，显示前 5 个 + 省略号 + 最后 1 个
+                          for (let i = 1; i <= 5; i++) {
+                            pages.push(i);
+                          }
+                          pages.push('ellipsis-end');
+                          pages.push(totalPages);
+                        } else if (currentPage >= totalPages - 2) {
+                          // 当前页靠后，显示第 1 个 + 省略号 + 最后 5 个
+                          pages.push(1);
+                          pages.push('ellipsis-start');
+                          for (let i = totalPages - 4; i <= totalPages; i++) {
+                            pages.push(i);
+                          }
+                        } else {
+                          // 当前页在中间，显示第 1 个 + 省略号 + 当前页前后 2 个 + 省略号 + 最后 1 个
+                          pages.push(1);
+                          pages.push('ellipsis-start');
+                          for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+                            pages.push(i);
+                          }
+                          pages.push('ellipsis-end');
+                          pages.push(totalPages);
+                        }
+                      }
+                      
+                      return pages.map((page, index) => {
+                        if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+                          return (
+                            <span
+                              key={page}
+                              className="px-4 py-2 text-sm text-gray-700 bg-white border-t border-b border-gray-300"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        
+                        const pageNum = page as number;
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => handlePageChange(pageNum)}
+                            disabled={loading}
+                            className={`px-4 py-2 text-sm font-medium border-t border-b ${
+                              currentPage === pageNum 
+                                ? 'bg-[#C41E3A] text-white border-[#C41E3A]' 
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            } ${pageNum === 1 ? '' : 'border-l'} ${pageNum === totalPages ? '' : 'border-r'}`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      });
+                    })()}
                     
                     {/* 下一页按钮 */}
                     <button
@@ -385,7 +486,24 @@ export default function ChineseTwoColumnLayout({
           {/* 右侧侧边栏 - 顶部对齐 */}
           {layout.isTwoColumn && (
             <aside className="lg:col-span-4">
-              <div className="flex flex-col gap-6 mt-8">
+              <div 
+                className={`flex flex-col gap-6 mt-8 ${layout.isStickySidebar !== false ? 'lg:sticky lg:top-8' : ''}`}
+                style={{
+                  ...(layout.isStickySidebar !== false && safariFeatures && !safariFeatures.supportsSticky ? {
+                    position: 'fixed' as any,
+                    top: '2rem',
+                    width: '100%',
+                    maxWidth: '33.333333%',
+                    zIndex: 10,
+                  } : {}),
+                  ...(layout.isStickySidebar !== false && isSafari ? {
+                    WebkitPosition: 'sticky' as any,
+                    position: 'sticky' as any,
+                    top: '2rem',
+                    zIndex: 10,
+                  } : {}),
+                }}
+              >
                 {/* 动态渲染排序后的侧边栏组件 */}
                 {renderSortedSidebarWidgets()}
                 
