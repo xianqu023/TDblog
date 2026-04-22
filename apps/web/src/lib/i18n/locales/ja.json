@@ -102,6 +102,143 @@
         "Drizzle": "霧雨",
         "default": "不明"
       }
+    },
+    "searchBox": {
+      "placeholder": "検索..."
+    },
+    "darkMode": {
+      "title": "ダークモード"
+    },
+    "fontSize": {
+      "title": "フォントサイズ"
+    },
+    "miniCalendar": {
+      "title": "カレンダー"
+    },
+    "statistics": {
+      "title": "サイト統計",
+      "articles": "記事",
+      "categories": "カテゴリ",
+      "tags": "タグ",
+      "views": "閲覧"
+    },
+    "categoryNav": {
+      "title": "カテゴリ",
+      "empty": "カテゴリがありません"
+    },
+    "pageLinks": {
+      "title": "ページ"
+    },
+    "siteLinks": {
+      "title": "サイトリンク",
+      "empty": "リンクがありません"
+    },
+    "newArticles": {
+      "title": "最新記事",
+      "empty": "記事がありません"
+    },
+    "featuredPosts": {
+      "title": "厳選記事",
+      "empty": "厳選記事がありません"
+    },
+    "randomPosts": {
+      "title": "ランダム記事",
+      "empty": "記事がありません"
+    },
+    "relatedArticles": {
+      "title": "関連記事",
+      "empty": "関連記事がありません"
+    },
+    "articleTOC": {
+      "title": "目次",
+      "empty": "目次がありません"
+    },
+    "recentComments": {
+      "title": "最新のコメント",
+      "empty": "コメントがありません"
+    },
+    "guestbook": {
+      "title": "ゲストブック",
+      "placeholder": "メッセージを書く...",
+      "submit": "送信",
+      "empty": "メッセージがありません"
+    },
+    "newsletter": {
+      "title": "ニュースレター",
+      "placeholder": "メールアドレスを入力",
+      "subscribe": "購読",
+      "success": "購読に成功しました！",
+      "error": "購読に失敗しました。もう一度お試しください"
+    },
+    "socialFeed": {
+      "title": "ソーシャルフィード",
+      "empty": "更新がありません"
+    },
+    "socialFollow": {
+      "title": "フォローする"
+    },
+    "rssFeed": {
+      "title": "RSSフィード",
+      "empty": "フィードコンテンツがありません"
+    },
+    "gallery": {
+      "title": "ギャラリー",
+      "more": "さらに{count}枚の画像",
+      "empty": "画像がありません"
+    },
+    "poll": {
+      "title": "投票調査"
+    },
+    "quiz": {
+      "title": "クイズ"
+    },
+    "countdown": {
+      "defaultTitle": "カウントダウン",
+      "defaultDescription": "新年まであと",
+      "days": "日",
+      "hours": "時間",
+      "minutes": "分",
+      "seconds": "秒"
+    },
+    "qrCode": {
+      "title": "スキャンしてアクセス",
+      "description": "スマホでQRコードをスキャンしてアクセス"
+    },
+    "promoProducts": {
+      "title": "プロモ商品",
+      "empty": "プロモ商品がありません"
+    },
+    "hotProducts": {
+      "title": "人気の商品",
+      "empty": "データがありません"
+    },
+    "recentOrders": {
+      "title": "最近の注文",
+      "empty": "注文がありません"
+    },
+    "productShowcase": {
+      "title": "商品",
+      "empty": "商品がありません"
+    },
+    "shoppingCart": {
+      "title": "カート"
+    },
+    "downloadZone": {
+      "title": "ダウンロード",
+      "empty": "ダウンロードがありません"
+    },
+    "coupons": {
+      "title": "クーポン",
+      "empty": "クーポンがありません"
+    },
+    "ctaButtons": {
+      "title": "クイックアクション"
+    },
+    "ad": {
+      "label": "広告",
+      "defaultTitle": "広告タイトル",
+      "defaultDescription": "これは広告スペースです。管理パネルから広告コンテンツを追加または変更できます",
+      "learnMore": "詳しくはこちら"
     }
   },
   "article": {

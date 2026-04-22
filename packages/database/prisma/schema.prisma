@@ -2,85 +2,65 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Note: Change the provider below to match your database type:
-// - "mysql" for MySQL
-// - "postgresql" for PostgreSQL  
-// - "sqlite" for SQLite
-// Then update DATABASE_URL in your .env file accordingly
-// After changing, run: npx prisma generate && npx prisma db push
-
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
 }
 
-// ============================================
-// 用户与权限系统
-// ============================================
-
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  passwordHash  String    @map("password_hash")
-  username      String    @unique
-  status        UserStatus @default(ACTIVE)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  lastLoginAt   DateTime? @map("last_login_at")
-
-  profile       UserProfile?
-  roles         UserRole[]
+  id            String           @id @default(uuid())
+  email         String           @unique
+  passwordHash  String           @map("password_hash")
+  username      String           @unique
+  status        UserStatus       @default(ACTIVE)
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  lastLoginAt   DateTime?        @map("last_login_at")
+  aiTasks       AITask[]
   articles      Article[]
+  comments      Comment[]
+  downloads     Download[]
   media         Media[]
   orders        Order[]
-  downloads     Download[]
-  memberships   UserMembership[]
   payments      Payment[]
   premiumAccess PremiumAccess[]
-  aiTasks       AITask[]
+  memberships   UserMembership[]
+  profile       UserProfile?
+  roles         UserRole[]
+  shares        FileShare[]
 
   @@map("users")
 }
 
-enum UserStatus {
-  ACTIVE
-  SUSPENDED
-  PENDING
-}
-
 model UserProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique @map("user_id")
-  displayName String?  @map("display_name")
-  avatarUrl   String?  @map("avatar_url")
+  id          String  @id @default(uuid())
+  userId      String  @unique @map("user_id")
+  displayName String? @map("display_name")
+  avatarUrl   String? @map("avatar_url")
   bio         String?
-  locale      String   @default("zh")
-
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locale      String  @default("zh")
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }
 
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  displayName String   @map("display_name")
+  id          String           @id @default(uuid())
+  name        String           @unique
+  displayName String           @map("display_name")
   description String?
-  isSystem    Boolean  @default(false) @map("is_system")
-
-  users       UserRole[]
+  isSystem    Boolean          @default(false) @map("is_system")
   permissions RolePermission[]
+  users       UserRole[]
 
   @@map("roles")
 }
 
 model Permission {
-  id          String   @id @default(uuid())
-  name        String   @unique
+  id          String           @id @default(uuid())
+  name        String           @unique
   resource    String
   action      String
   description String?
-
   roles       RolePermission[]
 
   @@map("permissions")
@@ -89,65 +69,392 @@ model Permission {
 model UserRole {
   userId String
   roleId String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
   @@map("user_roles")
 }
 
 model RolePermission {
-  roleId       String @map("role_id")
-  permissionId String @map("permission_id")
-
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
   @@map("role_permissions")
 }
 
-// ============================================
-// 内容管理系统
-// ============================================
-
 model Article {
-  id          String        @id @default(uuid())
-  authorId    String        @map("author_id")
-  slug        String        @unique
-  status      ArticleStatus @default(DRAFT)
-  isPremium   Boolean       @default(false) @map("is_premium")
-  premiumPrice Decimal?     @default(0) @map("premium_price")
-  coverImage  String?       @map("cover_image")
-  publishedAt DateTime?     @map("published_at")
-  viewCount   Int           @default(0) @map("view_count")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-
-  // AI 相关字段
-  aiGenerated Boolean       @default(false) @map("ai_generated")
-  aiTaskId    String?       @map("ai_task_id")
-
-  // 下载相关字段
-  downloadEnabled Boolean   @default(false) @map("download_enabled")
-  downloadFile    String?   @map("download_file")
-  downloadFileName String?  @map("download_file_name")
-  downloadFileSize BigInt?  @map("download_file_size")
-  downloadIsFree  Boolean   @default(true) @map("download_is_free")
-  downloadPrice   Decimal?  @map("download_price")
-  downloadCount   Int       @default(0) @map("download_count")
-
-  author      User            @relation(fields: [authorId], references: [id])
-  translations ArticleTranslation[]
-  tags        ArticleTag[]
-  categories  ArticleCategory[]
-  premiumAccess PremiumAccess[]
-  orderItems  OrderItem[]
-  aiTasks     AITask[]
+  id               String               @id @default(uuid())
+  authorId         String               @map("author_id")
+  slug             String               @unique
+  status           ArticleStatus        @default(DRAFT)
+  isPremium        Boolean              @default(false) @map("is_premium")
+  isPinned         Boolean              @default(false) @map("is_pinned")
+  premiumPrice     Decimal?             @default(0) @map("premium_price")
+  coverImage       String?              @map("cover_image")
+  publishedAt      DateTime?            @map("published_at")
+  viewCount        Int                  @default(0) @map("view_count")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  aiGenerated      Boolean              @default(false) @map("ai_generated")
+  aiTaskId         String?              @map("ai_task_id")
+  downloadEnabled  Boolean              @default(false) @map("download_enabled")
+  downloadFile     String?              @map("download_file")
+  downloadFileName String?              @map("download_file_name")
+  downloadFileSize BigInt?              @map("download_file_size")
+  downloadIsFree   Boolean              @default(true) @map("download_is_free")
+  downloadPrice    Decimal?             @map("download_price")
+  downloadCount    Int                  @default(0) @map("download_count")
+  aiTasks          AITask[]
+  categories       ArticleCategory[]
   articleDownloads ArticleDownload[]
+  tags             ArticleTag[]
+  translations     ArticleTranslation[]
+  author           User                 @relation(fields: [authorId], references: [id])
+  comments         Comment[]
+  orderItems       OrderItem[]
+  premiumAccess    PremiumAccess[]
 
   @@map("articles")
+}
+
+model ArticleTranslation {
+  id              String  @id @default(uuid())
+  articleId       String  @map("article_id")
+  locale          String
+  title           String
+  excerpt         String?
+  content         String
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description")
+  metaKeywords    String? @map("meta_keywords")
+  article         Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, locale])
+  @@map("article_translations")
+}
+
+model Tag {
+  id       String       @id @default(uuid())
+  name     String
+  slug     String       @unique
+  color    String?
+  articles ArticleTag[]
+
+  @@map("tags")
+}
+
+model ArticleTag {
+  articleId String  @map("article_id")
+  tagId     String  @map("tag_id")
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@map("article_tags")
+}
+
+model Category {
+  id          String            @id @default(uuid())
+  name        String
+  slug        String            @unique
+  parentId    String?           @map("parent_id")
+  description String?
+  articles    ArticleCategory[]
+  parent      Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]        @relation("CategoryHierarchy")
+
+  @@map("categories")
+}
+
+model ArticleCategory {
+  articleId  String   @map("article_id")
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, categoryId])
+  @@map("article_categories")
+}
+
+model Membership {
+  id           String           @id @default(uuid())
+  name         String
+  description  String?
+  price        Decimal
+  durationDays Int              @map("duration_days")
+  features     Json
+  isActive     Boolean          @default(true) @map("is_active")
+  orderItems   OrderItem[]
+  memberships  UserMembership[]
+
+  @@map("memberships")
+}
+
+model UserMembership {
+  id           String           @id @default(uuid())
+  userId       String           @map("user_id")
+  membershipId String           @map("membership_id")
+  status       MembershipStatus @default(ACTIVE)
+  startsAt     DateTime         @map("starts_at")
+  expiresAt    DateTime         @map("expires_at")
+  membership   Membership       @relation(fields: [membershipId], references: [id])
+  user         User             @relation(fields: [userId], references: [id])
+
+  @@map("user_memberships")
+}
+
+model Product {
+  id            String      @id @default(uuid())
+  name          String
+  slug          String      @unique
+  description   String?
+  price         Decimal
+  filePath      String?     @map("file_path")
+  fileSize      BigInt?     @map("file_size")
+  downloadLimit Int         @default(0) @map("download_limit")
+  isActive      Boolean     @default(true) @map("is_active")
+  downloads     Download[]
+  orderItems    OrderItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id            String          @id @default(uuid())
+  orderNumber   String          @unique @map("order_number")
+  userId        String          @map("user_id")
+  totalAmount   Decimal         @map("total_amount")
+  currency      String          @default("USD")
+  status        OrderStatus     @default(PENDING)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  downloads     Download[]
+  items         OrderItem[]
+  user          User            @relation(fields: [userId], references: [id])
+  payments      Payment[]
+  premiumAccess PremiumAccess[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String        @id @default(uuid())
+  orderId      String        @map("order_id")
+  productId    String?       @map("product_id")
+  articleId    String?       @map("article_id")
+  membershipId String?       @map("membership_id")
+  itemType     OrderItemType @map("item_type")
+  price        Decimal
+  membership   Membership?   @relation(fields: [membershipId], references: [id])
+  article      Article?      @relation(fields: [articleId], references: [id])
+  product      Product?      @relation(fields: [productId], references: [id])
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id           String          @id @default(uuid())
+  orderId      String          @map("order_id")
+  provider     PaymentProvider
+  providerTxId String          @unique @map("provider_tx_id")
+  amount       Decimal
+  currency     String
+  status       PaymentStatus   @default(PENDING)
+  paidAt       DateTime?       @map("paid_at")
+  rawResponse  Json?           @map("raw_response")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  userId       String?         @map("user_id")
+  user         User?           @relation(fields: [userId], references: [id])
+  order        Order           @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Download {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  productId      String    @map("product_id")
+  orderId        String    @map("order_id")
+  downloadCount  Int       @default(0) @map("download_count")
+  lastDownloadAt DateTime? @map("last_download_at")
+  order          Order     @relation(fields: [orderId], references: [id])
+  product        Product   @relation(fields: [productId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@map("downloads")
+}
+
+model Media {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  filename      String
+  originalName  String        @map("original_name")
+  mimeType      String        @map("mime_type")
+  fileSize      BigInt        @map("file_size")
+  storagePath   String        @map("storage_path")
+  storageDriver StorageDriver @default(LOCAL) @map("storage_driver")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  user          User          @relation(fields: [userId], references: [id])
+  shares        FileShare[]
+
+  @@map("media")
+}
+
+model Setting {
+  id          String      @id @default(uuid())
+  key         String      @unique
+  value       String
+  type        SettingType @default(STRING)
+  group       String
+  description String?
+
+  @@map("settings")
+}
+
+model HeroSlide {
+  id        String  @id @default(uuid())
+  title     String
+  subtitle  String? @map("subtitle")
+  imageUrl  String  @map("image_url")
+  linkUrl   String? @map("link_url")
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  @@map("hero_slides")
+}
+
+model Theme {
+  id          String         @id @default(uuid())
+  name        String
+  slug        String         @unique
+  description String?
+  previewUrl  String?        @map("preview_url")
+  isDefault   Boolean        @default(false) @map("is_default")
+  isActive    Boolean        @default(true) @map("is_active")
+  sortOrder   Int            @default(0) @map("sort_order")
+  config      Json           // 当前主题配置
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  versions    ThemeVersion[]
+
+  @@map("themes")
+}
+
+model ThemeVersion {
+  id        String   @id @default(uuid())
+  themeId   String   @map("theme_id")
+  version   Int
+  config    Json     // 该版本的配置快照
+  note      String?  // 版本备注
+  createdAt DateTime @default(now()) @map("created_at")
+  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+
+  @@unique([themeId, version])
+  @@map("theme_versions")
+}
+
+model ThemeTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  previewUrl  String?  @map("preview_url")
+  category    String   // 模板分类: blog, landing, portfolio 等
+  config      Json     // 模板配置
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("theme_templates")
+}
+
+model Menu {
+  id        String   @id @default(uuid())
+  label     String
+  href      String
+  icon      String?
+  order     Int      @default(0) @map("sort_order")
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("menus")
+}
+
+model PremiumAccess {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  articleId String   @map("article_id")
+  orderId   String   @map("order_id")
+  grantedAt DateTime @default(now()) @map("granted_at")
+  order     Order    @relation(fields: [orderId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, articleId])
+  @@map("premium_access")
+}
+
+model ArticleDownload {
+  id           String   @id @default(uuid())
+  articleId    String   @map("article_id")
+  userId       String?  @map("user_id")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  downloadedAt DateTime @default(now()) @map("downloaded_at")
+  article      Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("article_downloads")
+}
+
+model AITask {
+  id          String       @id @default(uuid())
+  type        AITaskType
+  status      AITaskStatus @default(PENDING)
+  progress    Int          @default(0)
+  params      Json
+  result      Json?
+  error       String?
+  articleId   String?      @map("article_id")
+  userId      String       @map("user_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  completedAt DateTime?    @map("completed_at")
+  user        User         @relation(fields: [userId], references: [id])
+  article     Article?     @relation(fields: [articleId], references: [id])
+
+  @@map("ai_tasks")
+}
+
+model Comment {
+  id        String        @id @default(uuid())
+  articleId String        @map("article_id")
+  userId    String?       @map("user_id")
+  parentId  String?       @map("parent_id")
+  content   String
+  status    CommentStatus @default(PENDING)
+  ipAddress String?       @map("ip_address")
+  userAgent String?       @map("user_agent")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  user      User?         @relation(fields: [userId], references: [id])
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, status])
+  @@index([parentId])
+  @@map("comments")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
 }
 
 enum ArticleStatus {
@@ -156,146 +463,10 @@ enum ArticleStatus {
   ARCHIVED
 }
 
-model ArticleTranslation {
-  id              String   @id @default(uuid())
-  articleId       String   @map("article_id")
-  locale          String
-  title           String
-  excerpt         String?
-  content         String 
-  metaTitle       String?  @map("meta_title")
-  metaDescription String?  @map("meta_description")
-  metaKeywords    String?  @map("meta_keywords")
-
-  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-
-  @@unique([articleId, locale])
-  @@map("article_translations")
-}
-
-model Tag {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  color     String?
-
-  articles  ArticleTag[]
-
-  @@map("tags")
-}
-
-model ArticleTag {
-  articleId String @map("article_id")
-  tagId     String @map("tag_id")
-
-  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([articleId, tagId])
-  @@map("article_tags")
-}
-
-model Category {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  parentId    String?  @map("parent_id")
-  description String?
-
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
-  articles    ArticleCategory[]
-
-  @@map("categories")
-}
-
-model ArticleCategory {
-  articleId  String   @map("article_id")
-  categoryId String   @map("category_id")
-
-  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@id([articleId, categoryId])
-  @@map("article_categories")
-}
-
-// ============================================
-// 会员系统
-// ============================================
-
-model Membership {
-  id           String   @id @default(uuid())
-  name         String
-  description  String?
-  price        Decimal 
-  durationDays Int      @map("duration_days")
-  features     Json
-  isActive     Boolean  @default(true) @map("is_active")
-
-  memberships  UserMembership[]
-  orderItems   OrderItem[]
-
-  @@map("memberships")
-}
-
-model UserMembership {
-  id           String         @id @default(uuid())
-  userId       String         @map("user_id")
-  membershipId String         @map("membership_id")
-  status       MembershipStatus @default(ACTIVE)
-  startsAt     DateTime       @map("starts_at")
-  expiresAt    DateTime       @map("expires_at")
-
-  user         User           @relation(fields: [userId], references: [id])
-  membership   Membership     @relation(fields: [membershipId], references: [id])
-
-  @@map("user_memberships")
-}
-
 enum MembershipStatus {
   ACTIVE
   EXPIRED
   CANCELLED
-}
-
-// ============================================
-// 商城与支付系统
-// ============================================
-
-model Product {
-  id            String   @id @default(uuid())
-  name          String
-  slug          String   @unique
-  description   String?
-  price         Decimal 
-  filePath      String?  @map("file_path")
-  fileSize      BigInt?  @map("file_size")
-  downloadLimit Int      @default(0) @map("download_limit")
-  isActive      Boolean  @default(true) @map("is_active")
-
-  orderItems    OrderItem[]
-  downloads     Download[]
-
-  @@map("products")
-}
-
-model Order {
-  id          String     @id @default(uuid())
-  orderNumber String     @unique @map("order_number")
-  userId      String     @map("user_id")
-  totalAmount Decimal    @map("total_amount")
-  currency    String     @default("USD")
-  status      OrderStatus @default(PENDING)
-  createdAt   DateTime   @default(now()) @map("created_at")
-
-  user        User       @relation(fields: [userId], references: [id])
-  items       OrderItem[]
-  payments    Payment[]
-  downloads   Download[]
-  premiumAccess PremiumAccess[]
-
-  @@map("orders")
 }
 
 enum OrderStatus {
@@ -305,46 +476,10 @@ enum OrderStatus {
   REFUNDED
 }
 
-model OrderItem {
-  id          String     @id @default(uuid())
-  orderId     String     @map("order_id")
-  productId   String?    @map("product_id")
-  articleId   String?    @map("article_id")
-  membershipId String?   @map("membership_id")
-  itemType    OrderItemType @map("item_type")
-  price       Decimal   
-
-  order       Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product     Product?   @relation(fields: [productId], references: [id])
-  article     Article?   @relation(fields: [articleId], references: [id])
-  membership  Membership? @relation(fields: [membershipId], references: [id])
-
-  @@map("order_items")
-}
-
 enum OrderItemType {
   PRODUCT
   ARTICLE
   MEMBERSHIP
-}
-
-model Payment {
-  id            String       @id @default(uuid())
-  orderId       String       @map("order_id")
-  provider      PaymentProvider
-  providerTxId  String       @unique @map("provider_tx_id")
-  amount        Decimal     
-  currency      String
-  status        PaymentStatus @default(PENDING)
-  paidAt        DateTime?    @map("paid_at")
-  rawResponse   Json?      @map("raw_response")
-  createdAt     DateTime     @default(now()) @map("created_at")
-
-  order         Order        @relation(fields: [orderId], references: [id])
-  user          User?        @relation(fields: [userId], references: [id])
-  userId        String?      @map("user_id")
-
-  @@map("payments")
 }
 
 enum PaymentProvider {
@@ -361,60 +496,10 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// ============================================
-// 下载与媒体
-// ============================================
-
-model Download {
-  id             String   @id @default(uuid())
-  userId         String   @map("user_id")
-  productId      String   @map("product_id")
-  orderId        String   @map("order_id")
-  downloadCount  Int      @default(0) @map("download_count")
-  lastDownloadAt DateTime? @map("last_download_at")
-
-  user           User     @relation(fields: [userId], references: [id])
-  product        Product  @relation(fields: [productId], references: [id])
-  order          Order    @relation(fields: [orderId], references: [id])
-
-  @@map("downloads")
-}
-
-model Media {
-  id            String   @id @default(uuid())
-  userId        String   @map("user_id")
-  filename      String
-  originalName  String   @map("original_name")
-  mimeType      String   @map("mime_type")
-  fileSize      BigInt   @map("file_size")
-  storagePath   String   @map("storage_path")
-  storageDriver StorageDriver @default(LOCAL) @map("storage_driver")
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  user          User     @relation(fields: [userId], references: [id])
-
-  @@map("media")
-}
-
 enum StorageDriver {
   LOCAL
   S3
   OSS
-}
-
-// ============================================
-// 系统配置
-// ============================================
-
-model Setting {
-  id          String      @id @default(uuid())
-  key         String      @unique
-  value       String    
-  type        SettingType @default(STRING)
-  group       String
-  description String?   
-
-  @@map("settings")
 }
 
 enum SettingType {
@@ -422,87 +507,6 @@ enum SettingType {
   NUMBER
   BOOLEAN
   JSON
-}
-
-model HeroSlide {
-  id        String  @id @default(uuid())
-  title     String
-  subtitle  String? @map("subtitle")
-  imageUrl  String  @map("image_url")
-  linkUrl   String? @map("link_url")
-  sortOrder Int     @default(0) @map("sort_order")
-  isActive  Boolean @default(true) @map("is_active")
-
-  @@map("hero_slides")
-}
-
-// ============================================
-// 导航菜单
-// ============================================
-
-model Menu {
-  id        String   @id @default(uuid())
-  label     String   // 菜单显示名称
-  href      String   // 链接地址
-  order     Int      @default(0) @map("sort_order")  // 排序
-  enabled   Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("menus")
-}
-
-model PremiumAccess {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  articleId String   @map("article_id")
-  orderId   String   @map("order_id")
-  grantedAt DateTime @default(now()) @map("granted_at")
-
-  user      User     @relation(fields: [userId], references: [id])
-  article   Article  @relation(fields: [articleId], references: [id])
-  order     Order    @relation(fields: [orderId], references: [id])
-
-  @@unique([userId, articleId])
-  @@map("premium_access")
-}
-
-// 文章下载记录
-model ArticleDownload {
-  id          String   @id @default(uuid())
-  articleId   String   @map("article_id")
-  userId      String?  @map("user_id")
-  ipAddress   String?  @map("ip_address")
-  userAgent   String?  @map("user_agent")
-  downloadedAt DateTime @default(now()) @map("downloaded_at")
-
-  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-
-  @@map("article_downloads")
-}
-
-// ============================================
-// AI 系统
-// ============================================
-
-model AITask {
-  id          String       @id @default(uuid())
-  type        AITaskType
-  status      AITaskStatus @default(PENDING)
-  progress    Int          @default(0)
-  params      Json         // 任务参数
-  result      Json?        // 任务结果
-  error       String?      // 错误信息
-  articleId   String?      @map("article_id")
-  userId      String       @map("user_id")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  completedAt DateTime?    @map("completed_at")
-
-  article     Article?     @relation(fields: [articleId], references: [id])
-  user        User         @relation(fields: [userId], references: [id])
-
-  @@map("ai_tasks")
 }
 
 enum AITaskType {
@@ -522,4 +526,31 @@ enum AITaskStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+model FileShare {
+  id               String   @id @default(uuid())
+  fileId           String   @map("file_id")
+  token            String   @unique
+  maxDownloads     Int?     @map("max_downloads")
+  downloadCount    Int      @default(0) @map("download_count")
+  expiresAt        DateTime? @map("expires_at")
+  password         String?
+  lastDownloadedAt DateTime? @map("last_downloaded_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  file             Media    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  createdBy        String   @map("created_by")
+  creator          User     @relation(fields: [createdBy], references: [id])
+
+  @@index([token])
+  @@index([fileId])
+  @@map("file_shares")
 }

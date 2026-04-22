@@ -107,6 +107,115 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * 上传文件
+ * POST /api/files
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: '请先登录' },
+        { status: 401 }
+      );
+    }
+
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+
+    if (!file) {
+      return NextResponse.json(
+        { error: 'Bad Request', message: '请提供文件' },
+        { status: 400 }
+      );
+    }
+
+    // 验证文件类型
+    if (!file.type.startsWith('image/') && !file.type.startsWith('application/')) {
+      return NextResponse.json(
+        { error: 'Bad Request', message: '不支持的文件类型' },
+        { status: 400 }
+      );
+    }
+
+    // 验证文件大小（最大 10MB）
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'Bad Request', message: '文件大小不能超过 10MB' },
+        { status: 400 }
+      );
+    }
+
+    // 获取存储实例
+    const storage = getStorage();
+
+    // 生成唯一文件名
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileExtension = file.name.split('.').pop() || 'bin';
+    const filename = `${timestamp}-${randomString}.${fileExtension}`;
+
+    // 将 File 转换为 Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 上传文件
+    const uploadResult = await storage.upload(buffer, file.name);
+    const storagePath = uploadResult.key;
+
+    // 保存到数据库
+    const media = await prisma.media.create({
+      data: {
+        userId: session.user.id,
+        filename: file.name,
+        originalName: file.name,
+        mimeType: file.type,
+        fileSize: BigInt(file.size),
+        storagePath: storagePath,
+        storageDriver: 'LOCAL',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profile: {
+              select: {
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 生成访问 URL
+    const url = uploadResult.url;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: media.id,
+        filename: media.filename,
+        originalName: media.originalName,
+        mimeType: media.mimeType,
+        size: Number(media.fileSize),
+        url: url,
+        createdAt: media.createdAt,
+      },
+    });
+  } catch (error: any) {
+    console.error('Upload file error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error', message: error.message || '上传文件失败' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * 批量删除文件
  * DELETE /api/files
  */

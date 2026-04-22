@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@blog/database";
-import { AIService } from "@/lib/ai/services";
-import { AIConfig } from "@/lib/ai/types";
 
 // 获取单个文章
 export async function GET(
@@ -167,11 +165,11 @@ export async function PUT(
         publishedAt: !wasPublished && isNowPublished ? new Date() : undefined,
         // 下载功能数据
         downloadEnabled: downloadEnabled !== undefined ? downloadEnabled : undefined,
-        downloadFile: downloadEnabled !== undefined ? (downloadEnabled ? downloadFile : null) : undefined,
-        downloadFileName: downloadEnabled !== undefined ? (downloadEnabled ? downloadFileName : null) : undefined,
-        downloadFileSize: downloadEnabled !== undefined ? (downloadEnabled ? downloadFileSize : null) : undefined,
-        downloadIsFree: downloadEnabled !== undefined ? (downloadEnabled ? downloadIsFree : true) : undefined,
-        downloadPrice: downloadEnabled !== undefined ? (downloadEnabled && !downloadIsFree ? parseFloat(downloadPrice) : null) : undefined,
+        downloadFile: downloadFile !== undefined ? downloadFile : undefined,
+        downloadFileName: downloadFileName !== undefined ? downloadFileName : undefined,
+        downloadFileSize: downloadFileSize !== undefined ? (downloadFileSize ? BigInt(downloadFileSize) : null) : undefined,
+        downloadIsFree: downloadIsFree !== undefined ? downloadIsFree : undefined,
+        downloadPrice: downloadPrice !== undefined && downloadPrice !== '' && !isNaN(parseFloat(downloadPrice)) ? parseFloat(downloadPrice) : undefined,
       },
     });
 
@@ -250,30 +248,8 @@ export async function PUT(
       }
     }
 
-    // 如果文章从草稿变为发布状态，触发自动翻译
-    let translationTask = null;
-    if (!wasPublished && isNowPublished) {
-      try {
-        const setting = await prisma.setting.findUnique({
-          where: { key: "ai_config" },
-        });
-
-        if (setting) {
-          const config: AIConfig = JSON.parse(setting.value);
-
-          if (config.enabled && config.features.autoTranslate) {
-            const aiService = new AIService(config);
-            translationTask = await aiService.translate.autoTranslateArticle(
-              id,
-              locale,
-              session.user.id
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Auto translation failed:", error);
-      }
-    }
+    // 自动翻译功能已暂时禁用，可在未来恢复
+    const translationTask = null;
 
     return NextResponse.json({
       success: true,
@@ -343,6 +319,69 @@ export async function DELETE(
     console.error("Delete article error:", error);
     return NextResponse.json(
       { success: false, message: "删除文章失败" },
+      { status: 500 }
+    );
+  }
+}
+
+// 部分更新文章（例如置顶）
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { isPinned } = body;
+
+    // 获取原文章
+    const existingArticle = await prisma.article.findUnique({
+      where: { id },
+    });
+
+    if (!existingArticle) {
+      return NextResponse.json(
+        { success: false, message: "文章不存在" },
+        { status: 404 }
+      );
+    }
+
+    // 检查权限
+    if (existingArticle.authorId !== session.user.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: { roles: { include: { role: true } } },
+      });
+      const isAdmin = (user?.roles as any[]).some((ur: any) => ur.role.name === "admin");
+      if (!isAdmin) {
+        return NextResponse.json({ success: false, message: "无权限" }, { status: 403 });
+      }
+    }
+
+    // 更新文章
+    const article = await prisma.article.update({
+      where: { id },
+      data: {
+        isPinned: isPinned !== undefined ? isPinned : undefined,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      article: {
+        id: article.id,
+        isPinned: article.isPinned,
+      },
+    });
+  } catch (error) {
+    console.error("Patch article error:", error);
+    return NextResponse.json(
+      { success: false, message: "更新文章失败" },
       { status: 500 }
     );
   }

@@ -29,19 +29,19 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, label, href, order, enabled } = body;
+    const { id, label, href, icon, order, enabled } = body;
 
     let menu;
     if (id) {
       // 更新
       menu = await prisma.menu.update({
         where: { id },
-        data: { label, href, order, enabled },
+        data: { label, href, icon, order, enabled },
       });
     } else {
       // 创建
       menu = await prisma.menu.create({
-        data: { label, href, order, enabled },
+        data: { label, href, icon, order, enabled },
       });
     }
 

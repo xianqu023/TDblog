@@ -21,12 +21,23 @@ export default function Footer() {
   const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
 
   useEffect(() => {
-    // 从全局变量获取设置（由 layout 注入）
-    if (typeof window !== "undefined" && (window as any).__SITE_SETTINGS__) {
-      setSettings((window as any).__SITE_SETTINGS__);
-    }
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/site-info');
+        const data = await response.json();
+        if (data.success && data.data.site) {
+          setSettings({
+            siteName: data.data.site.siteName || "My Blog",
+            siteDescription: data.data.site.siteDescription || "分享技术、生活与思考的个人博客平台",
+            logoUrl: data.data.site.logoUrl || "",
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
     
-    // 从 API 获取分类
+    loadSettings();
     fetchCategories();
   }, []);
 

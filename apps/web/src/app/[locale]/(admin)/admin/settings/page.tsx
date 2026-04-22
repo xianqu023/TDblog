@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Upload, Globe, Mail, CreditCard, Search, Bell, LayoutGrid, HardDrive, X, Cloud } from "lucide-react";
-import WidgetManager from "@/components/admin/WidgetManager";
+import { Save, Upload, Globe, Mail, CreditCard, Search, Bell, HardDrive, X, Cloud, FolderOpen } from "lucide-react";
+import FileSelector from "@/components/admin/FileSelector";
 
-type TabKey = "general" | "seo" | "cdn" | "payment" | "notification" | "widgets" | "storage";
+type TabKey = "general" | "seo" | "cdn" | "payment" | "notification" | "storage";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
@@ -13,6 +13,7 @@ export default function SettingsPage() {
     siteDescription: "一个个人博客平台",
     siteKeywords: "博客,技术,分享",
     logoUrl: "",
+    faviconUrl: "",
     defaultLocale: "zh",
     postsPerPage: "10",
     seoTitle: "My Blog - 个人博客平台",
@@ -55,6 +56,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showLogoSelector, setShowLogoSelector] = useState(false);
+  const [showFaviconSelector, setShowFaviconSelector] = useState(false);
 
   // 加载设置
   useEffect(() => {
@@ -85,7 +88,6 @@ export default function SettingsPage() {
     { key: "storage", label: "存储设置", icon: HardDrive },
     { key: "payment", label: "支付设置", icon: CreditCard },
     { key: "notification", label: "通知设置", icon: Bell },
-    { key: "widgets", label: "小工具管理", icon: LayoutGrid },
   ];
 
   const handleSave = async () => {
@@ -172,6 +174,78 @@ export default function SettingsPage() {
     setMessage({ type: "success", text: "Logo 已移除" });
   };
 
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    const validTypes = ["image/x-icon", "image/vnd.microsoft.icon", "image/png", "image/jpeg"];
+    if (!validTypes.includes(file.type) && !file.name.endsWith('.ico')) {
+      setMessage({ type: "error", text: "请上传 ICO 或 PNG 格式文件" });
+      return;
+    }
+
+    // 验证文件大小 (512KB)
+    if (file.size > 512 * 1024) {
+      setMessage({ type: "error", text: "ICO 文件大小不能超过 512KB" });
+      return;
+    }
+
+    setUploading(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSettings((prev) => ({
+          ...prev,
+          faviconUrl: data.data.url,
+        }));
+        setMessage({ type: "success", text: "Favicon 上传成功" });
+      } else {
+        setMessage({ type: "error", text: data.message || "上传失败" });
+      }
+    } catch (error) {
+      console.error("Favicon upload error:", error);
+      setMessage({ type: "error", text: "上传失败" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveFavicon = () => {
+    setSettings((prev) => ({
+      ...prev,
+      faviconUrl: "",
+    }));
+    setMessage({ type: "success", text: "Favicon 已移除" });
+  };
+
+  const handleSelectLogo = (file: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      logoUrl: file.url,
+    }));
+    setMessage({ type: "success", text: "Logo 已选择" });
+  };
+
+  const handleSelectFavicon = (file: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      faviconUrl: file.url,
+    }));
+    setMessage({ type: "success", text: "Favicon 已选择" });
+  };
+
   return (
     <div>
       <div className="mb-6">
@@ -182,7 +256,7 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Tabs */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border p-2">
+          <div className="bg-white rounded-xl shadow-sm p-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -205,7 +279,7 @@ export default function SettingsPage() {
 
         {/* Settings Form */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-xl border p-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
             {activeTab === "general" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-gray-900">基本设置</h3>
@@ -312,12 +386,74 @@ export default function SettingsPage() {
                         disabled={uploading}
                       />
                     </label>
+                    <button
+                      onClick={() => setShowLogoSelector(true)}
+                      className="flex items-center px-4 py-2 text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                      title="从文件库选择"
+                    >
+                      <FolderOpen className="h-4 w-4 mr-2" />
+                      选择文件
+                    </button>
                     {uploading && (
                       <span className="text-sm text-gray-500">上传中...</span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
                     建议尺寸：200x200 像素，支持 JPG、PNG、GIF 格式，最大 2MB
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    浏览器图标 (Favicon)
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    {settings.faviconUrl ? (
+                      <div className="relative">
+                        <img
+                          src={settings.faviconUrl}
+                          alt="Favicon"
+                          className="h-10 w-10 object-contain rounded-lg border"
+                        />
+                        <button
+                          onClick={handleRemoveFavicon}
+                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <span className="text-sm font-bold text-gray-400">
+                          {settings.siteName.substring(0, 1).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <label className="flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+                      <Upload className="h-4 w-4 mr-2" />
+                      {settings.faviconUrl ? "更换图标" : "上传图标"}
+                      <input
+                        type="file"
+                        accept=".ico,image/x-icon,image/png"
+                        onChange={handleFaviconUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                    <button
+                      onClick={() => setShowFaviconSelector(true)}
+                      className="flex items-center px-4 py-2 text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                      title="从文件库选择"
+                    >
+                      <FolderOpen className="h-4 w-4 mr-2" />
+                      选择文件
+                    </button>
+                    {uploading && (
+                      <span className="text-sm text-gray-500">上传中...</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    建议尺寸：32x32 或 64x64 像素，支持 ICO、PNG 格式，最大 512KB
                   </p>
                 </div>
               </div>
@@ -930,16 +1066,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === "widgets" && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-gray-900">侧边栏小工具管理</h3>
-                <p className="text-sm text-gray-600">
-                  配置各个页面侧边栏显示的小工具，可以调整显示顺序、启用或关闭，以及自定义每个小工具的设置项。
-                </p>
-                <WidgetManager />
-              </div>
-            )}
-
             {/* Message */}
             {message && (
               <div
@@ -967,6 +1093,22 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Logo 文件选择器 */}
+      <FileSelector
+        isOpen={showLogoSelector}
+        onClose={() => setShowLogoSelector(false)}
+        onSelect={handleSelectLogo}
+        type="image"
+      />
+
+      {/* Favicon 文件选择器 */}
+      <FileSelector
+        isOpen={showFaviconSelector}
+        onClose={() => setShowFaviconSelector(false)}
+        onSelect={handleSelectFavicon}
+        type="image"
+      />
     </div>
   );
 }

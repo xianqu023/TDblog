@@ -16,6 +16,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 检查是否有重复的 locale 前缀（如 /zh/zh）
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length >= 2 && segments[0] === segments[1] && locales.includes(segments[0] as typeof locales[number])) {
+    // 移除重复的 locale，重定向到正确的路径
+    const url = request.nextUrl.clone();
+    url.pathname = "/" + segments.slice(1).join("/");
+    return NextResponse.redirect(url);
+  }
+
   // 检查是否已经有 locale 前缀
   const hasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`

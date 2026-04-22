@@ -116,6 +116,9 @@ function UserCenterContent({ params }: { params: Promise<{ locale: string }> }) 
         const updateData = await updateRes.json();
         setProfile((prev) => (prev ? { ...prev, avatarUrl } : null));
         alert("头像上传成功");
+        
+        // 触发自定义事件，通知侧边栏作者卡片刷新
+        window.dispatchEvent(new CustomEvent('avatar-updated'));
       }
     } catch (error: any) {
       alert(error.message || "上传失败");
@@ -146,6 +149,9 @@ function UserCenterContent({ params }: { params: Promise<{ locale: string }> }) 
         );
         setEditing(false);
         alert("保存成功");
+        
+        // 触发自定义事件，通知侧边栏作者卡片刷新
+        window.dispatchEvent(new CustomEvent('avatar-updated'));
       }
     } catch (error) {
       alert("保存失败");

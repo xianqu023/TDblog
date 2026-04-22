@@ -102,6 +102,143 @@
         "Drizzle": "Drizzle",
         "default": "Unknown"
       }
+    },
+    "searchBox": {
+      "placeholder": "Search..."
+    },
+    "darkMode": {
+      "title": "Dark Mode"
+    },
+    "fontSize": {
+      "title": "Font Size"
+    },
+    "miniCalendar": {
+      "title": "Calendar"
+    },
+    "statistics": {
+      "title": "Site Statistics",
+      "articles": "Articles",
+      "categories": "Categories",
+      "tags": "Tags",
+      "views": "Views"
+    },
+    "categoryNav": {
+      "title": "Categories",
+      "empty": "No categories"
+    },
+    "pageLinks": {
+      "title": "Pages"
+    },
+    "siteLinks": {
+      "title": "Site Links",
+      "empty": "No links"
+    },
+    "newArticles": {
+      "title": "Latest Articles",
+      "empty": "No articles"
+    },
+    "featuredPosts": {
+      "title": "Featured Posts",
+      "empty": "No featured posts"
+    },
+    "randomPosts": {
+      "title": "Random Posts",
+      "empty": "No articles"
+    },
+    "relatedArticles": {
+      "title": "Related Articles",
+      "empty": "No related articles"
+    },
+    "articleTOC": {
+      "title": "Table of Contents",
+      "empty": "No contents"
+    },
+    "recentComments": {
+      "title": "Recent Comments",
+      "empty": "No comments"
+    },
+    "guestbook": {
+      "title": "Guestbook",
+      "placeholder": "Write your message...",
+      "submit": "Submit",
+      "empty": "No messages"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "success": "Subscribed successfully!",
+      "error": "Subscription failed, please try again"
+    },
+    "socialFeed": {
+      "title": "Social Feed",
+      "empty": "No updates"
+    },
+    "socialFollow": {
+      "title": "Follow Us"
+    },
+    "rssFeed": {
+      "title": "RSS Feed",
+      "empty": "No feed content"
+    },
+    "gallery": {
+      "title": "Gallery",
+      "more": "{count} more images",
+      "empty": "No images"
+    },
+    "poll": {
+      "title": "Poll"
+    },
+    "quiz": {
+      "title": "Quiz"
+    },
+    "countdown": {
+      "defaultTitle": "Countdown",
+      "defaultDescription": "Time until New Year",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "qrCode": {
+      "title": "Scan to Visit",
+      "description": "Scan QR code with your phone to visit"
+    },
+    "promoProducts": {
+      "title": "Promotional Products",
+      "empty": "No promotional products"
+    },
+    "hotProducts": {
+      "title": "Hot Products",
+      "empty": "No data"
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "empty": "No orders"
+    },
+    "productShowcase": {
+      "title": "Products",
+      "empty": "No products"
+    },
+    "shoppingCart": {
+      "title": "Shopping Cart"
+    },
+    "downloadZone": {
+      "title": "Downloads",
+      "empty": "No downloads"
+    },
+    "coupons": {
+      "title": "Coupons",
+      "empty": "No coupons"
+    },
+    "ctaButtons": {
+      "title": "Quick Actions"
+    },
+    "ad": {
+      "label": "Ad",
+      "defaultTitle": "Ad Title",
+      "defaultDescription": "This is an ad space. You can add or modify ad content from the admin panel",
+      "learnMore": "Learn More"
     }
   },
   "article": {

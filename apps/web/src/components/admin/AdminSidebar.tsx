@@ -7,14 +7,14 @@ import {
   Globe, LogOut, Home, FileText, MessageSquare,
   FileCode, Link2, Star, Settings, LayoutDashboard,
   Users, ShoppingBag, Eye, PenTool, Upload, Tag, FileBox,
-  Sliders, ChevronRight, Monitor, Sun, Moon, Sparkles,
+  Sliders, ChevronRight, Monitor, Sun, Moon, Sparkles, Palette,
 } from "lucide-react";
 import { useDarkMode } from "./DarkModeProvider";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard, FileText, MessageSquare, FileCode, Link2,
   Star, Settings, Home, Users, ShoppingBag, Eye,
-  PenTool, Upload, Tag, FileBox, Sliders, Monitor, Globe, LogOut, Sun, Moon, Sparkles,
+  PenTool, Upload, Tag, FileBox, Sliders, Monitor, Globe, LogOut, Sun, Moon, Sparkles, Palette,
 };
 
 interface NavItem {
@@ -33,6 +33,7 @@ const navItems: NavItem[] = [
       { icon: "FileText", label: "文章管理", href: "/admin/articles" },
       { icon: "Eye", label: "页面管理", href: "/admin/pages" },
       { icon: "Tag", label: "文档系列", href: "/admin/categories" },
+      { icon: "Sliders", label: "菜单管理", href: "/admin/menus" },
     ],
   },
   { icon: "MessageSquare", label: "评论管理", href: "/admin/comments" },
@@ -48,8 +49,9 @@ const navItems: NavItem[] = [
     label: "系统管理",
     children: [
       { icon: "Settings", label: "系统设置", href: "/admin/settings" },
+      { icon: "Palette", label: "主题设置", href: "/admin/theme-settings" },
       { icon: "ShoppingBag", label: "商城管理", href: "/admin/shop" },
-      { icon: "Sparkles", label: "AI配置", href: "/admin/ai-config" },
+      { icon: "Sparkles", label: "AI 配置", href: "/admin/ai-config" },
     ],
   },
 ];
@@ -57,6 +59,13 @@ const navItems: NavItem[] = [
 interface SiteSettings {
   siteName: string;
   logoUrl: string;
+}
+
+interface UserInfo {
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  email: string;
 }
 
 export default function AdminSidebar() {
@@ -69,30 +78,29 @@ export default function AdminSidebar() {
   });
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [settings, setSettings] = useState<SiteSettings>({ siteName: "", logoUrl: "" });
-  const [user, setUser] = useState({ username: "", email: "" });
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).__SITE_SETTINGS__) {
-      setSettings((window as any).__SITE_SETTINGS__);
-    }
+    loadSiteInfo();
   }, []);
 
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.user) {
-          setUser({
-            username: data.user.name || data.user.username || "",
-            email: data.user.email || "",
-          });
+  const loadSiteInfo = async () => {
+    try {
+      const response = await fetch('/api/site-info');
+      const data = await response.json();
+      if (data.success && data.data.site) {
+        setSettings(data.data.site);
+        if (data.data.user) {
+          setUserInfo(data.data.user);
         }
-      })
-      .catch(() => {});
-  }, []);
+      }
+    } catch (error) {
+      console.error('Failed to load site info:', error);
+    }
+  };
 
   const isActive = (href?: string) => {
-    if (!href) return false;
+    if (!href || !pathname) return false;
     return pathname === href || pathname.startsWith(href + "/");
   };
 
@@ -127,7 +135,7 @@ export default function AdminSidebar() {
               />
             ) : (
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-blue-500/25">
-                TD
+                {settings.siteName && settings.siteName.length > 0 ? settings.siteName.charAt(0).toUpperCase() : "TD"}
               </div>
             )}
             <div>
@@ -139,14 +147,22 @@ export default function AdminSidebar() {
               </div>
             </div>
           </Link>
-          {user.username && (
+          {userInfo && (
             <div className={`flex items-center space-x-3 px-3 py-3 rounded-xl ${darkMode ? "bg-[#22262e]" : "bg-gray-50"}`}>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                {user.username.charAt(0).toUpperCase()}
-              </div>
+              {userInfo.avatarUrl ? (
+                <img
+                  src={userInfo.avatarUrl}
+                  alt={userInfo.displayName}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                  {userInfo.displayName && userInfo.displayName.length > 0 ? userInfo.displayName.charAt(0).toUpperCase() : "U"}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${darkMode ? "text-gray-100" : "text-gray-800"} truncate`}>{user.username}</p>
-                <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"} truncate`}>{user.email}</p>
+                <p className={`text-sm font-medium ${darkMode ? "text-gray-100" : "text-gray-800"} truncate`}>{userInfo.displayName || userInfo.username || "用户"}</p>
+                <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"} truncate`}>{userInfo.email || ""}</p>
               </div>
             </div>
           )}

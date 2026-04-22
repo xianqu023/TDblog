@@ -3,11 +3,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales, type Locale, defaultLocale } from "@/lib/i18n/config";
-import Header from "@/components/public/Header";
-import Footer from "@/components/public/Footer";
+import PublicLayout from "@/components/PublicLayout";
 import { getSiteSettings } from "@/lib/site-settings";
-import SiteSettingsInjector from "@/components/SiteSettingsInjector";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 async function getMessagesForLocale(locale: Locale) {
   return (await import(`@/lib/i18n/locales/${locale}.json`)).default;
@@ -25,7 +24,7 @@ export async function generateMetadata({
   const siteName = siteSettings.siteName;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 
-  return {
+  const metadata: Metadata = {
     title: {
       default: siteName,
       template: `%s | ${siteName}`,
@@ -51,6 +50,17 @@ export async function generateMetadata({
       },
     },
   };
+
+  // 如果设置了 faviconUrl，添加到 metadata
+  if (siteSettings.faviconUrl) {
+    metadata.icons = {
+      icon: siteSettings.faviconUrl,
+      shortcut: siteSettings.faviconUrl,
+      apple: siteSettings.faviconUrl,
+    };
+  }
+
+  return metadata;
 }
 
 export default async function LocaleLayout({
@@ -62,12 +72,10 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  // Ensure that the incoming `locale` parameter is valid
   if (!locales.includes(locale as Locale)) {
     notFound();
   }
 
-  // Enable static rendering with the correct locale
   setRequestLocale(locale);
 
   const messages = await getMessagesForLocale(locale as Locale);
@@ -76,10 +84,11 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages}>
       <AuthProvider>
-        <SiteSettingsInjector settings={siteSettings} />
-        <Header currentLocale={locale as Locale} siteSettings={siteSettings} />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        <ThemeProvider>
+          <PublicLayout locale={locale as Locale} siteSettings={siteSettings}>
+            {children}
+          </PublicLayout>
+        </ThemeProvider>
       </AuthProvider>
     </NextIntlClientProvider>
   );

@@ -1,0 +1,41 @@
+[database]
+# 数据库类型: sqlite, postgresql, mysql
+provider = sqlite
+
+# 数据库连接字符串
+# SQLite: file:./data/blog.db（相对路径，自动识别）
+# PostgreSQL: postgresql://user:password@localhost:5432/blog
+# MySQL: mysql://user:password@localhost:3306/blog
+url = file:./data/blog.db
+
+[server]
+# 服务端口
+port = 3000
+
+# Node 环境
+node_env = production
+
+[auth]
+# NextAuth 密钥（生产环境请修改为随机字符串）
+# 生成: openssl rand -base64 32
+secret = your-secret-key-change-in-production
+
+# 认证 URL
+url = https://your-domain.com
+
+[site]
+# 网站名称
+name = My Blog
+
+# 网站 URL
+url = https://your-domain.com
+
+[storage]
+# 存储驱动: local, s3, oss
+driver = local
+
+# 本地存储路径（相对路径，自动识别）
+local_path = ./uploads
+
+# 本地存储 URL 前缀
+local_url = /uploads

@@ -98,7 +98,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <h3 className="text-lg font-bold text-gray-900 mb-4">商品包含</h3>
             <ul className="space-y-3">
               {mockProduct.features.map((feature, i) => (
-                <li key={i} className="flex items-center text-gray-600">
+                <li key={`feature-${i}`} className="flex items-center text-gray-600">
                   <span className="h-2 w-2 rounded-full bg-green-500 mr-3" />
                   {feature}
                 </li>
@@ -115,7 +115,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <div className="flex items-center text-yellow-500">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
-                  key={i}
+                  key={`star-${i}`}
                   className={`h-5 w-5 ${i < Math.floor(mockProduct.rating) ? 'fill-current' : ''}`}
                 />
               ))}

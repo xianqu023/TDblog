@@ -42,9 +42,22 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).__SITE_SETTINGS__) {
-      setSettings((window as any).__SITE_SETTINGS__);
-    }
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/site-info');
+        const data = await response.json();
+        if (data.success && data.data.site) {
+          setSettings({
+            siteName: data.data.site.siteName || "My Blog",
+            logoUrl: data.data.site.logoUrl || "",
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+    
+    loadSettings();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {

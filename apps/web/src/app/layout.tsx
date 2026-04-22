@@ -1,47 +1,61 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CDNHead } from "@/components/shared/CDNHead";
 import { getSiteSettings } from "@/lib/site-settings";
+import ThemeInitializer from "@/components/ThemeInitializer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-  preload: true,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
-  preload: true,
-});
+// Use system fonts only - no external font loading to avoid network issues during build
+const fontVariables = {
+  sans: "--font-geist-sans",
+  mono: "--font-geist-mono",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
-  return {
+  const metadata: Metadata = {
     title: settings.siteName,
     description: settings.siteDescription,
   };
+  
+  // 如果设置了 faviconUrl，添加到 metadata
+  if (settings.faviconUrl) {
+    metadata.icons = {
+      icon: settings.faviconUrl,
+      shortcut: settings.faviconUrl,
+      apple: settings.faviconUrl,
+    };
+  }
+  
+  return metadata;
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
+  
   return (
     <html
       lang="zh"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <head>
         <CDNHead />
+        {/* 动态添加 favicon 链接 */}
+        {settings.faviconUrl && (
+          <>
+            <link rel="icon" href={settings.faviconUrl} />
+            <link rel="shortcut icon" href={settings.faviconUrl} />
+            <link rel="apple-touch-icon" href={settings.faviconUrl} />
+          </>
+        )}
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col" style={{ backgroundColor: "var(--theme-bg, #ffffff)", color: "var(--theme-text, #171717)" }}>
+        <ThemeInitializer />
+        {children}
+      </body>
     </html>
   );
 }

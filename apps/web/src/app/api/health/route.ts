@@ -1,25 +1,18 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@blog/database";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  const health = {
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    database: "unknown",
-  };
-
-  // 检查数据库连接
+export async function GET(request: NextRequest) {
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    health.database = "connected";
+    return NextResponse.json({
+      success: true,
+      message: "API is healthy",
+      timestamp: new Date().toISOString(),
+      status: "ok"
+    });
   } catch (error) {
-    health.database = "disconnected";
-    health.status = "DEGRADED";
+    console.error("Health check error:", error);
+    return NextResponse.json(
+      { success: false, message: "Health check failed" },
+      { status: 500 }
+    );
   }
-
-  const statusCode = health.status === "OK" ? 200 : 503;
-
-  return NextResponse.json(health, { status: statusCode });
 }

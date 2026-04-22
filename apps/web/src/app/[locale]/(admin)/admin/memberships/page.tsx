@@ -63,7 +63,7 @@ export default function MembershipsPage() {
             <div className="text-sm text-gray-500 mb-4">{plan.users} 位用户</div>
             <ul className="space-y-2 mb-6">
               {plan.features.map((feature, i) => (
-                <li key={i} className="flex items-center text-sm text-gray-600">
+                <li key={`feature-${plan.id}-${i}`} className="flex items-center text-sm text-gray-600">
                   <span className="h-2 w-2 rounded-full bg-green-500 mr-2" />
                   {feature}
                 </li>

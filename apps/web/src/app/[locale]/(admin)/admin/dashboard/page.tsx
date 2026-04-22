@@ -240,7 +240,7 @@ export default function DashboardPage() {
             {trafficData.map((item, i) => {
               const height = maxTraffic > 0 ? (item.value / maxTraffic) * 100 : 0;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center group">
+                <div key={item.date} className="flex-1 flex flex-col items-center group">
                   <div className="w-full flex items-end justify-center" style={{ height: "100px" }}>
                     <div
                       className={`w-full max-w-8 rounded-lg transition-all duration-500 group-hover:opacity-80 ${
@@ -360,7 +360,7 @@ export default function DashboardPage() {
           ].map((item, i) => {
             const Icon = item.icon;
             return (
-              <div key={i} className={`${cardStyle} rounded-2xl p-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5`}>
+              <div key={item.label} className={`${cardStyle} rounded-2xl p-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5`}>
                 <div className="flex items-center space-x-3">
                   <div className={`w-10 h-10 rounded-xl ${item.iconBg} ${item.darkIconBg} flex items-center justify-center`}>
                     <Icon className={`h-5 w-5 ${item.iconColor} ${item.darkIconColor}`} />
@@ -392,7 +392,7 @@ export default function DashboardPage() {
               { title: "/posts/hlxx", views: 12, comments: 0, time: "0秒" },
               { title: "/posts/PLKl", views: 7, comments: 0, time: "0秒" },
             ].map((article, i) => (
-              <div key={i} className={`flex items-center space-x-3 py-3 ${i > 0 ? `${separatorColor} rounded-t-xl` : ""} ${i > 0 ? "pt-4" : ""}`}>
+              <div key={article.title} className={`flex items-center space-x-3 py-3 ${i > 0 ? `${separatorColor} rounded-t-xl` : ""} ${i > 0 ? "pt-4" : ""}`}>
                 <span className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 ${
                   i === 0
                     ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-md shadow-orange-500/25"
@@ -435,7 +435,7 @@ export default function DashboardPage() {
               { user: "lfp1991", status: "已通过", content: "欢迎使用 Anheyu~App!", time: "23小时前" },
               { user: "lfp1991", status: "已通过", content: "欢迎使用 Anheyu~App!", time: "23小时前" },
             ].map((comment, i) => (
-              <div key={i} className={`flex items-start space-x-3 py-3 ${i > 0 ? `${separatorColor} rounded-t-xl` : ""} ${i > 0 ? "pt-4" : ""}`}>
+              <div key={`${comment.user}-${i}-${comment.time}`} className={`flex items-start space-x-3 py-3 ${i > 0 ? `${separatorColor} rounded-t-xl` : ""} ${i > 0 ? "pt-4" : ""}`}>
                 <div className={`w-9 h-9 rounded-xl ${darkMode ? "bg-gradient-to-br from-gray-600 to-gray-700" : "bg-gradient-to-br from-gray-200 to-gray-300"} flex items-center justify-center text-xs font-bold ${darkMode ? "text-gray-200" : "text-gray-600"} flex-shrink-0`}>
                   {comment.user[0].toUpperCase()}
                 </div>

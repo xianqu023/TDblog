@@ -14,6 +14,12 @@ import {
   X,
   CheckCircle,
   AlertCircle,
+  Share2,
+  Link as LinkIcon,
+  Copy,
+  Calendar,
+  Hash,
+  Lock,
 } from "lucide-react";
 
 import { useDarkMode } from "@/components/admin/DarkModeProvider";
@@ -32,6 +38,23 @@ interface FileItem {
     profile?: {
       displayName?: string;
       avatarUrl?: string;
+    };
+  };
+}
+
+interface FileShare {
+  id: string;
+  token: string;
+  maxDownloads: number | null;
+  downloadCount: number;
+  expiresAt: string | null;
+  password: string | null;
+  createdAt: string;
+  creator: {
+    username: string;
+    profile: {
+      displayName: string | null;
+      avatarUrl: string | null;
     };
   };
 }
@@ -81,6 +104,14 @@ export default function FilesPage() {
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [currentFileId, setCurrentFileId] = useState<string | null>(null);
+  const [shares, setShares] = useState<FileShare[]>([]);
+  const [shareSettings, setShareSettings] = useState({
+    maxDownloads: "",
+    expiresAt: "",
+    password: "",
+  });
 
   const cardStyle = darkMode
     ? "bg-[#1e2228]"
@@ -129,11 +160,14 @@ export default function FilesPage() {
     }));
     setUploadProgress(initialProgress);
 
+    let duplicateCount = 0;
+
     // 逐个上传文件
     for (let i = 0; i < acceptedFiles.length; i++) {
       const file = acceptedFiles[i];
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("checkDuplicate", "true");
 
       try {
         // 更新进度为上传中
@@ -149,11 +183,20 @@ export default function FilesPage() {
         const result = await response.json();
 
         if (result.success) {
-          setUploadProgress((prev) =>
-            prev.map((p, idx) =>
-              idx === i ? { ...p, progress: 100, status: "success" } : p
-            )
-          );
+          if (result.data.isDuplicate) {
+            duplicateCount++;
+            setUploadProgress((prev) =>
+              prev.map((p, idx) =>
+                idx === i ? { ...p, progress: 100, status: "success", error: "文件已存在，跳过上传" } : p
+              )
+            );
+          } else {
+            setUploadProgress((prev) =>
+              prev.map((p, idx) =>
+                idx === i ? { ...p, progress: 100, status: "success" } : p
+              )
+            );
+          }
         } else {
           setUploadProgress((prev) =>
             prev.map((p, idx) =>
@@ -175,12 +218,19 @@ export default function FilesPage() {
     // 刷新文件列表
     await loadFiles();
 
+    // 显示重复文件提示
+    if (duplicateCount > 0) {
+      setMessage({ type: "info", text: `已跳过 ${duplicateCount} 个重复文件` });
+    }
+
     // 3秒后清除上传进度
     setTimeout(() => {
       setUploadProgress([]);
       setIsUploading(false);
     }, 3000);
   }, []);
+
+  const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -282,6 +332,81 @@ export default function FilesPage() {
     }
   };
 
+  // 打开分享链接管理
+  const handleOpenShare = async (fileId: string) => {
+    setCurrentFileId(fileId);
+    setShowShareModal(true);
+    
+    // 加载该文件的所有分享链接
+    try {
+      const response = await fetch(`/api/files/${fileId}/shares`);
+      const result = await response.json();
+      if (result.success) {
+        setShares(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to load shares:", error);
+    }
+  };
+
+  // 创建分享链接
+  const handleCreateShare = async () => {
+    if (!currentFileId) return;
+
+    try {
+      const response = await fetch(`/api/files/${currentFileId}/shares`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          maxDownloads: shareSettings.maxDownloads || null,
+          expiresAt: shareSettings.expiresAt || null,
+          password: shareSettings.password || null,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setShares([result.data, ...shares]);
+        setShareSettings({ maxDownloads: "", expiresAt: "", password: "" });
+        alert("分享链接创建成功");
+      } else {
+        const result = await response.json();
+        alert(result.message || "创建失败");
+      }
+    } catch (error) {
+      console.error("Create share error:", error);
+      alert("创建失败");
+    }
+  };
+
+  // 删除分享链接
+  const handleDeleteShare = async (shareId: string) => {
+    if (!currentFileId) return;
+
+    try {
+      const response = await fetch(
+        `/api/files/${currentFileId}/shares?shareId=${shareId}`,
+        { method: "DELETE" }
+      );
+
+      if (response.ok) {
+        setShares(shares.filter((s) => s.id !== shareId));
+      } else {
+        alert("删除失败");
+      }
+    } catch (error) {
+      console.error("Delete share error:", error);
+      alert("删除失败");
+    }
+  };
+
+  // 复制链接
+  const copyShareLink = (token: string) => {
+    const url = `${window.location.origin}/s/${token}`;
+    navigator.clipboard.writeText(url);
+    alert("链接已复制到剪贴板");
+  };
+
   return (
     <div>
       {/* Header */}
@@ -313,11 +438,11 @@ export default function FilesPage() {
 
       {/* Upload Progress */}
       {uploadProgress.length > 0 && (
-        <div className={`${cardStyle} rounded-xl p-4 mb-6`}>
+        <div className={`${cardStyle} rounded-xl shadow-sm p-4 mb-6`}>
           <h4 className={`font-medium ${textPrimary} mb-3`}>上传进度</h4>
           <div className="space-y-2">
             {uploadProgress.map((item, index) => (
-              <div key={index} className="flex items-center space-x-3">
+              <div key={`upload-${item.file.name}-${index}`} className="flex items-center space-x-3">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-700 truncate max-w-xs">
@@ -360,10 +485,10 @@ export default function FilesPage() {
       {/* Drop Zone */}
       <div
         {...getRootProps()}
-        className={`bg-white rounded-xl border-2 border-dashed p-8 mb-6 text-center cursor-pointer transition-colors ${
+        className={`bg-white rounded-xl shadow-sm border-2 border-dashed p-8 mb-6 text-center cursor-pointer transition-colors ${
           isDragActive
             ? "border-blue-500 bg-blue-50"
-            : "border-gray-300 hover:border-blue-500"
+            : "border-gray-200 hover:border-blue-400"
         }`}
       >
         <input {...getInputProps()} />
@@ -378,7 +503,7 @@ export default function FilesPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border p-4 mb-6">
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -448,7 +573,7 @@ export default function FilesPage() {
           {files.map((file) => (
             <div
               key={file.id}
-              className={`bg-white rounded-xl border p-4 group hover:shadow-lg transition-all ${
+              className={`bg-white rounded-xl shadow-sm p-4 group hover:shadow-lg transition-all ${
                 selectedFiles.has(file.id) ? "ring-2 ring-blue-500" : ""
               }`}
             >
@@ -479,6 +604,13 @@ export default function FilesPage() {
                 />
                 <div className="flex items-center space-x-1">
                   <button
+                    onClick={() => handleOpenShare(file.id)}
+                    className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="分享链接"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => handleDownload(file)}
                     className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
@@ -496,7 +628,7 @@ export default function FilesPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -563,6 +695,13 @@ export default function FilesPage() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-2">
                       <button
+                        onClick={() => handleOpenShare(file.id)}
+                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="分享链接"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={() => handleDownload(file)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
@@ -580,6 +719,151 @@ export default function FilesPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${cardStyle} rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h3 className={`text-xl font-bold ${textPrimary}`}>分享链接管理</h3>
+                <p className="text-sm text-gray-500 mt-1">创建和管理文件分享链接</p>
+              </div>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Create New Share */}
+              <div className={`${cardStyle} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}>
+                <h4 className={`font-medium ${textPrimary} mb-4`}>创建新分享链接</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Hash className="inline w-4 h-4 mr-1" />
+                      下载次数限制
+                    </label>
+                    <input
+                      type="number"
+                      value={shareSettings.maxDownloads}
+                      onChange={(e) => setShareSettings({ ...shareSettings, maxDownloads: e.target.value })}
+                      placeholder="留空表示无限制"
+                      className={`w-full px-3 py-2 ${inputStyle} rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Calendar className="inline w-4 h-4 mr-1" />
+                      有效期至
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={shareSettings.expiresAt}
+                      onChange={(e) => setShareSettings({ ...shareSettings, expiresAt: e.target.value })}
+                      className={`w-full px-3 py-2 ${inputStyle} rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Lock className="inline w-4 h-4 mr-1" />
+                      访问密码
+                    </label>
+                    <input
+                      type="text"
+                      value={shareSettings.password}
+                      onChange={(e) => setShareSettings({ ...shareSettings, password: e.target.value })}
+                      placeholder="留空表示无需密码"
+                      className={`w-full px-3 py-2 ${inputStyle} rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleCreateShare}
+                  className="w-full py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all font-medium"
+                >
+                  创建分享链接
+                </button>
+              </div>
+
+              {/* Share Links List */}
+              <div>
+                <h4 className={`font-medium ${textPrimary} mb-4`}>已有分享链接 ({shares.length})</h4>
+                {shares.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <LinkIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>暂无分享链接</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {shares.map((share) => (
+                      <div
+                        key={share.id}
+                        className={`${cardStyle} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                {window.location.origin}/s/{share.token}
+                              </code>
+                              <button
+                                onClick={() => copyShareLink(share.token)}
+                                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                              >
+                                <Copy className="h-4 w-4 text-gray-500" />
+                              </button>
+                            </div>
+                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                              <span className="flex items-center">
+                                <Hash className="h-4 w-4 mr-1" />
+                                已下载：{share.downloadCount}{share.maxDownloads ? `/${share.maxDownloads}` : ''}
+                              </span>
+                              {share.expiresAt && (
+                                <span className="flex items-center">
+                                  <Calendar className="h-4 w-4 mr-1" />
+                                  过期：{new Date(share.expiresAt).toLocaleString('zh-CN')}
+                                </span>
+                              )}
+                              {share.password && (
+                                <span className="flex items-center">
+                                  <Lock className="h-4 w-4 mr-1" />
+                                  需要密码
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteShare(share.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="w-full py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all font-medium"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

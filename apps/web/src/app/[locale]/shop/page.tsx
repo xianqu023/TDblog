@@ -1,70 +1,43 @@
 import Link from 'next/link';
-import { Search, Filter, ShoppingBag } from 'lucide-react';
+import { Search, ShoppingBag } from 'lucide-react';
+import { prisma } from '@blog/database';
 
-const mockProducts = [
-  {
-    id: '1',
-    slug: 'nextjs-tutorial-pdf',
-    name: 'Next.js 完整教程 PDF',
-    description: '从零基础到实战项目，包含 500+ 页详细内容',
-    price: 29.9,
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop',
-    sales: 156,
-    rating: 4.8,
-  },
-  {
-    id: '2',
-    slug: 'react-component-library',
-    name: 'React 组件库模板',
-    description: '50+ 高质量组件，开箱即用，支持 TypeScript',
-    price: 49.9,
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop',
-    sales: 89,
-    rating: 4.6,
-  },
-  {
-    id: '3',
-    slug: 'typescript-course',
-    name: 'TypeScript 实战课程',
-    description: '10 小时视频教程，含项目实战',
-    price: 99.9,
-    image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=300&fit=crop',
-    sales: 234,
-    rating: 4.9,
-  },
-  {
-    id: '4',
-    slug: 'mysql-optimization-guide',
-    name: 'MySQL 性能优化指南',
-    description: '实战优化技巧，索引优化、查询优化',
-    price: 19.9,
-    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop',
-    sales: 78,
-    rating: 4.5,
-  },
-  {
-    id: '5',
-    slug: 'docker-k8s-guide',
-    name: 'Docker & K8s 完整指南',
-    description: '容器化部署全套方案',
-    price: 79.9,
-    image: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=400&h=300&fit=crop',
-    sales: 145,
-    rating: 4.7,
-  },
-  {
-    id: '6',
-    slug: 'ai-python-course',
-    name: 'Python 人工智能入门',
-    description: '机器学习基础，深度学习实战',
-    price: 59.9,
-    image: 'https://images.unsplash.com/photo-1527474305487-b87b222846cc?w=400&h=300&fit=crop',
-    sales: 198,
-    rating: 4.8,
-  },
-];
+interface Product {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  price: number;
+  filePath: string | null;
+  fileSize: bigint | null;
+  downloadLimit: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export default function ShopPage() {
+async function getProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/products?status=active`,
+      { cache: 'no-store' }
+    );
+    
+    if (!response.ok) return [];
+    const data = await response.json();
+    
+    if (!data.success || !data.products) return [];
+    
+    return data.products;
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    return [];
+  }
+}
+
+export default async function ShopPage() {
+  const products = await getProducts();
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
@@ -102,39 +75,45 @@ export default function ShopPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockProducts.map((product) => (
-          <Link
-            key={product.id}
-            href={`/shop/${product.slug}`}
-            className="group bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all"
-          >
-            <div className="relative h-48 overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-3 right-3 px-3 py-1 bg-blue-600 text-white text-sm font-bold rounded-full">
-                ¥{product.price}
+      {products.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <Link
+              key={product.id}
+              href={`/shop/${product.slug}`}
+              className="group bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all"
+            >
+              <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <ShoppingBag className="h-16 w-16 text-white/50" />
+                <div className="absolute top-3 right-3 px-3 py-1 bg-blue-600 text-white text-sm font-bold rounded-full">
+                  ¥{product.price}
+                </div>
               </div>
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                {product.name}
-              </h3>
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="flex items-center">
-                  <ShoppingBag className="h-4 w-4 mr-1" />
-                  {product.sales} 销量
-                </span>
-                <span className="text-yellow-500">★ {product.rating}</span>
+              <div className="p-5">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  {product.name}
+                </h3>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description || '暂无描述'}</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span className="flex items-center">
+                    <ShoppingBag className="h-4 w-4 mr-1" />
+                    {product.downloadLimit || '无限制'} 下载
+                  </span>
+                  <span className="text-gray-400">
+                    {new Date(product.createdAt).toLocaleDateString('zh-CN')}
+                  </span>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <ShoppingBag className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">暂无商品</h3>
+          <p className="text-gray-500">商城暂无商品，请稍后查看</p>
+        </div>
+      )}
     </div>
   );
 }

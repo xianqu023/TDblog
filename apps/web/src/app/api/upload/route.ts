@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     // 解析表单数据
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    const checkDuplicate = formData.get('checkDuplicate') === 'true';
 
     if (!file) {
       return NextResponse.json(
@@ -52,6 +53,36 @@ export async function POST(request: NextRequest) {
         { error: 'Bad Request', message: `文件大小超过限制 (最大 ${maxSizeMB}MB)` },
         { status: 400 }
       );
+    }
+
+    // 检查重复文件（基于文件名和大小）
+    if (checkDuplicate) {
+      const existingMedia = await prisma.media.findFirst({
+        where: {
+          originalName: file.name,
+          fileSize: BigInt(file.size),
+          mimeType: file.type,
+        },
+      });
+
+      if (existingMedia) {
+        const storage = getStorage();
+        const url = storage.getUrl(existingMedia.storagePath);
+        
+        return NextResponse.json({
+          success: true,
+          data: {
+            id: existingMedia.id,
+            key: existingMedia.storagePath,
+            url,
+            size: Number(existingMedia.fileSize),
+            mimeType: existingMedia.mimeType,
+            category: getFileCategory(existingMedia.mimeType),
+            createdAt: existingMedia.createdAt,
+            isDuplicate: true,
+          },
+        });
+      }
     }
 
     // 读取文件内容
@@ -93,6 +124,7 @@ export async function POST(request: NextRequest) {
         mimeType: file.type,
         category: getFileCategory(file.type),
         createdAt: media.createdAt,
+        isDuplicate: false,
       },
     });
   } catch (error: any) {

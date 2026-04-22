@@ -1,48 +1,107 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import React from "react";
 
 interface AdCardProps {
   title?: string;
   imageUrl?: string;
   linkUrl?: string;
-  description?: string;
+  adCode?: string;
+  adType?: "image" | "code" | "text";
+  textContent?: string;
+  className?: string;
 }
 
+/**
+ * 侧边栏广告卡片组件
+ * 支持图片广告、谷歌广告代码、文本广告三种类型
+ */
 export default function AdCard({
-  title,
-  imageUrl = "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop",
-  linkUrl = "#",
-  description,
+  title = "广告",
+  imageUrl,
+  linkUrl,
+  adCode,
+  adType = "image",
+  textContent,
+  className = "",
 }: AdCardProps) {
-  const t = useTranslations("sidebar");
-  
-  const displayTitle = title || t("ad.defaultTitle");
-  const displayDescription = description || t("ad.defaultDescription");
+  // 渲染图片广告
+  const renderImageAd = () => {
+    if (!imageUrl) return null;
+
+    return (
+      <div className="ad-image">
+        {linkUrl ? (
+          <a
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full h-auto rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              loading="lazy"
+            />
+          </a>
+        ) : (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-auto rounded-lg"
+            loading="lazy"
+          />
+        )}
+      </div>
+    );
+  };
+
+  // 渲染谷歌广告代码
+  const renderCodeAd = () => {
+    if (!adCode) return null;
+
+    return (
+      <div
+        className="ad-code"
+        dangerouslySetInnerHTML={{ __html: adCode }}
+      />
+    );
+  };
+
+  // 渲染文本广告
+  const renderTextAd = () => {
+    if (!textContent) return null;
+
+    return (
+      <div className="ad-text p-4 bg-gray-50 rounded-lg">
+        {linkUrl ? (
+          <a
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {textContent}
+          </a>
+        ) : (
+          <p className="text-gray-700">{textContent}</p>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="bg-white rounded-xl border overflow-hidden">
-      <div className="relative">
-        <img
-          src={imageUrl}
-          alt={displayTitle}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute top-2 right-2 px-2 py-1 bg-black/60 text-white text-xs rounded">
-          {t("ad.label")}
+    <div className={`ad-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ${className}`}>
+      {title && (
+        <div className="ad-title px-4 py-2 bg-gray-50 border-b border-gray-200">
+          <h3 className="text-sm font-medium text-gray-600">{title}</h3>
         </div>
-      </div>
-
-      <div className="p-4">
-        <h4 className="font-bold text-gray-900 mb-1">{displayTitle}</h4>
-        <p className="text-sm text-gray-600 mb-3">{displayDescription}</p>
-
-        <a
-          href={linkUrl}
-          className="block w-full text-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
-        >
-          {t("ad.learnMore")}
-        </a>
+      )}
+      <div className="ad-content p-4">
+        {adType === "image" && renderImageAd()}
+        {adType === "code" && renderCodeAd()}
+        {adType === "text" && renderTextAd()}
       </div>
     </div>
   );

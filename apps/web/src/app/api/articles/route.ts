@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@blog/database";
-import { AIService } from "@/lib/ai/services";
-import { AIConfig } from "@/lib/ai/types";
 
 // 创建文章
 export async function POST(request: NextRequest) {
@@ -67,6 +65,12 @@ export async function POST(request: NextRequest) {
         premiumPrice: premiumPrice && !isNaN(parseFloat(premiumPrice)) ? parseFloat(premiumPrice) : null,
         coverImage,
         publishedAt: articleStatus === "PUBLISHED" ? new Date() : null,
+        downloadEnabled: downloadEnabled || false,
+        downloadFile: downloadFile || null,
+        downloadFileName: downloadFileName || null,
+        downloadFileSize: downloadFileSize ? BigInt(downloadFileSize) : null,
+        downloadIsFree: downloadIsFree !== undefined ? downloadIsFree : true,
+        downloadPrice: downloadPrice && !isNaN(parseFloat(downloadPrice)) ? parseFloat(downloadPrice) : null,
         translations: {
           create: {
             locale,
@@ -114,31 +118,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 如果文章发布，触发自动翻译
-    let translationTask = null;
-    if (status === "published") {
-      try {
-        const setting = await prisma.setting.findUnique({
-          where: { key: "ai_config" },
-        });
-
-        if (setting) {
-          const config: AIConfig = JSON.parse(setting.value);
-
-          if (config.enabled && config.features.autoTranslate) {
-            const aiService = new AIService(config);
-            translationTask = await aiService.translate.autoTranslateArticle(
-              article.id,
-              locale,
-              session.user.id
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Auto translation failed:", error);
-        // 翻译失败不影响文章发布
-      }
-    }
+    // 自动翻译功能已暂时禁用，可在未来恢复
+    const translationTask = null;
 
     return NextResponse.json({
       success: true,
@@ -168,6 +149,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const locale = searchParams.get("locale") || "zh";
     const categoryId = searchParams.get("categoryId");
+    const category = searchParams.get("category"); // 支持分类 slug
 
     const where: any = {};
 
@@ -183,12 +165,42 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    if (category) {
+      // 按分类 slug 查询
+      const categoryRecord = await prisma.category.findUnique({
+        where: { slug: category },
+        select: { id: true },
+      });
+
+      if (categoryRecord) {
+        where.categories = {
+          some: {
+            categoryId: categoryRecord.id,
+          },
+        };
+      } else {
+        // 分类不存在，返回空数组
+        return NextResponse.json({
+          success: true,
+          articles: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+          },
+        });
+      }
+    }
+
     const [articles, total] = await Promise.all([
       prisma.article.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: [
+          { createdAt: "desc" }
+        ],
         include: {
           translations: {
             where: { locale },
@@ -232,8 +244,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get articles error:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : null);
     return NextResponse.json(
-      { success: false, message: "获取文章列表失败" },
+      { success: false, message: error instanceof Error ? error.message : "获取文章列表失败" },
       { status: 500 }
     );
   }

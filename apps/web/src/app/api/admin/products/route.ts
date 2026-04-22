@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, slug, description, price, filePath, fileSize, downloadLimit } = body;
+  const { name, slug, description, price, filePath, fileSize, downloadLimit, isActive } = body;
 
   if (!name || !slug || !price) {
     return NextResponse.json(
@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
         filePath,
         fileSize: fileSize ? BigInt(fileSize) : null,
         downloadLimit: downloadLimit || 0,
+        isActive: isActive !== undefined ? isActive : true,
       },
     });
 

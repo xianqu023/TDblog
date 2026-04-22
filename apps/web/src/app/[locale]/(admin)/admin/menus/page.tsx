@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Save, X, ArrowUp, ArrowDown } from "lucide-react";
 import { getMenus, saveMenu, deleteMenu, updateMenuOrder, MenuInput } from "@/app/actions/menu";
+import IconPicker from "@/components/admin/IconPicker";
 
 interface Menu {
   id: string;
   label: string;
   href: string;
+  icon?: string;
   order: number;
   enabled: boolean;
   createdAt: string;
@@ -19,11 +21,12 @@ export default function MenusPage() {
   const [loading, setLoading] = useState(true);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [newMenu, setNewMenu] = useState(false);
-  const [formData, setFormData] = useState<MenuInput>({
+  const [formData, setFormData] = useState<MenuInput & { icon?: string }>({
     label: "",
     href: "/",
     order: 0,
     enabled: true,
+    icon: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -45,6 +48,7 @@ export default function MenusPage() {
       href: menu.href,
       order: menu.order,
       enabled: menu.enabled,
+      icon: menu.icon || "",
     });
     setNewMenu(false);
   };
@@ -56,6 +60,7 @@ export default function MenusPage() {
       href: "/",
       order: menus.length,
       enabled: true,
+      icon: "",
     });
     setNewMenu(true);
   };
@@ -63,7 +68,7 @@ export default function MenusPage() {
   const handleCancel = () => {
     setEditingMenu(null);
     setNewMenu(false);
-    setFormData({ label: "", href: "/", order: 0, enabled: true });
+    setFormData({ label: "", href: "/", order: 0, enabled: true, icon: "" });
   };
 
   const handleSave = async () => {
@@ -179,6 +184,15 @@ export default function MenusPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                图标
+              </label>
+              <IconPicker
+                value={formData.icon}
+                onChange={(icon) => setFormData({ ...formData, icon })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 排序
               </label>
               <input
@@ -265,7 +279,17 @@ export default function MenusPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm font-medium text-gray-900">{menu.label}</span>
+                  <div className="flex items-center gap-2">
+                    {menu.icon && (
+                      <span className="text-[#C41E3A]">
+                        {(() => {
+                          const IconComponent = require("lucide-react")[menu.icon];
+                          return IconComponent ? <IconComponent className="w-5 h-5" /> : null;
+                        })()}
+                      </span>
+                    )}
+                    <span className="text-sm font-medium text-gray-900">{menu.label}</span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <code className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{menu.href}</code>

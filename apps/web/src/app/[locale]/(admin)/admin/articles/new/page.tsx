@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FullMarkdownEditor from "@/components/admin/FullMarkdownEditor";
+import FileSelector from "@/components/admin/FileSelector";
 import {
   Save,
   Eye,
@@ -16,6 +17,7 @@ import {
   Upload,
   X,
   Link,
+  FolderOpen,
 } from "lucide-react";
 
 export default function ArticleEditorPage() {
@@ -39,6 +41,8 @@ export default function ArticleEditorPage() {
   const [downloadPrice, setDownloadPrice] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [showFileSelector, setShowFileSelector] = useState(false);
+  const [showCoverSelector, setShowCoverSelector] = useState(false);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -125,6 +129,16 @@ export default function ArticleEditorPage() {
     setDownloadFile("");
     setDownloadFileName("");
     setDownloadFileSize(null);
+  };
+
+  const handleSelectFile = (file: any) => {
+    setDownloadFile(file.url);
+    setDownloadFileName(file.originalName);
+    setDownloadFileSize(file.size);
+  };
+
+  const handleSelectCover = (file: any) => {
+    setCoverImage(file.url);
   };
 
   const formatFileSize = (bytes: number | null) => {
@@ -307,24 +321,32 @@ export default function ArticleEditorPage() {
                   </button>
                 </div>
               ) : (
-                <label className="w-full h-40 bg-gray-50 dark:bg-[#22262e] border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 dark:hover:border-blue-500 dark:hover:text-blue-400 transition-all cursor-pointer">
-                  {uploadingCover ? (
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  ) : (
-                    <div className="text-center">
-                      <ImageIcon className="h-8 w-8 mx-auto mb-2" />
-                      <span className="text-sm">点击上传封面图</span>
-                      <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP</p>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleCoverUpload}
-                    disabled={uploadingCover}
-                  />
-                </label>
+                <div className="flex gap-2">
+                  <label className="flex-1 h-40 bg-gray-50 dark:bg-[#22262e] border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 dark:hover:border-blue-500 dark:hover:text-blue-400 transition-all cursor-pointer">
+                    {uploadingCover ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    ) : (
+                      <div className="text-center">
+                        <ImageIcon className="h-8 w-8 mx-auto mb-2" />
+                        <span className="text-sm">点击上传</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleCoverUpload}
+                      disabled={uploadingCover}
+                    />
+                  </label>
+                  <button
+                    onClick={() => setShowCoverSelector(true)}
+                    className="w-16 h-40 bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-xl flex items-center justify-center text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all"
+                    title="从文件库选择"
+                  >
+                    <FolderOpen className="h-6 w-6" />
+                  </button>
+                </div>
               )}
 
               <input
@@ -407,29 +429,35 @@ export default function ArticleEditorPage() {
                       </button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-32 bg-gray-50 dark:bg-[#22262e] border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        {uploadingFile ? (
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        ) : (
-                          <>
-                            <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              点击上传文件
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              支持任意文件类型
-                            </p>
-                          </>
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                        disabled={uploadingFile}
-                      />
-                    </label>
+                    <div className="flex gap-2">
+                      <label className="flex-1 flex flex-col items-center justify-center w-full h-32 bg-gray-50 dark:bg-[#22262e] border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          {uploadingFile ? (
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                          ) : (
+                            <>
+                              <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                点击上传
+                              </p>
+                            </>
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                          disabled={uploadingFile}
+                        />
+                      </label>
+                      <button
+                        onClick={() => setShowFileSelector(true)}
+                        className="w-16 h-32 bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-xl flex items-center justify-center text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all"
+                        title="从文件库选择"
+                      >
+                        <FolderOpen className="h-6 w-6" />
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -548,6 +576,22 @@ export default function ArticleEditorPage() {
           </div>
         </div>
       </div>
+
+      {/* 文件选择器 */}
+      <FileSelector
+        isOpen={showFileSelector}
+        onClose={() => setShowFileSelector(false)}
+        onSelect={handleSelectFile}
+        type="file"
+      />
+
+      {/* 封面选择器 */}
+      <FileSelector
+        isOpen={showCoverSelector}
+        onClose={() => setShowCoverSelector(false)}
+        onSelect={handleSelectCover}
+        type="image"
+      />
     </div>
   );
 }

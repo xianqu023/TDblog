@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Edit, Image as ImageIcon } from "lucide-react";
+import { Eye, Edit, Image as ImageIcon, FolderOpen } from "lucide-react";
+import FileSelector from "@/components/admin/FileSelector";
 
 interface MarkdownEditorProps {
   value?: string;
@@ -21,6 +22,7 @@ export default function MarkdownEditor({
 }: MarkdownEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showFileSelector, setShowFileSelector] = useState(false);
 
   // 插入 Markdown 语法
   const insertMarkdown = (before: string, after: string = "") => {
@@ -77,6 +79,11 @@ export default function MarkdownEditor({
       }
     };
     input.click();
+  };
+
+  // 从文件库选择图片
+  const handleImageSelect = (file: any) => {
+    insertMarkdown(`![${file.originalName}](${file.url})`);
   };
 
   // 简单的 Markdown 预览渲染
@@ -214,6 +221,13 @@ export default function MarkdownEditor({
           <ImageIcon className="h-4 w-4" />
         </button>
         <button
+          onClick={() => setShowFileSelector(true)}
+          className="p-2 hover:bg-gray-200 rounded"
+          title="从文件库选择"
+        >
+          <FolderOpen className="h-4 w-4" />
+        </button>
+        <button
           onClick={() => insertMarkdown("[链接文字](", ")")}
           className="p-2 hover:bg-gray-200 rounded"
           title="链接"
@@ -255,6 +269,14 @@ export default function MarkdownEditor({
         <span>支持 Markdown 语法</span>
         <span>{value.length} 字符</span>
       </div>
+
+      {/* 文件选择器 */}
+      <FileSelector
+        isOpen={showFileSelector}
+        onClose={() => setShowFileSelector(false)}
+        onSelect={handleImageSelect}
+        type="image"
+      />
     </div>
   );
 }

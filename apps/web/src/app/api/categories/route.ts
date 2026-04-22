@@ -7,12 +7,6 @@ export async function GET() {
     const categories = await prisma.category.findMany({
       where: { parentId: null }, // 只获取顶级分类
       orderBy: [{ name: 'asc' }],
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-      },
     });
 
     return NextResponse.json({ success: true, data: categories });

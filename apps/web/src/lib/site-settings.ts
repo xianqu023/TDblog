@@ -4,6 +4,8 @@ export interface SiteSettings {
   siteName: string;
   siteDescription: string;
   logoUrl: string;
+  siteKeywords: string;
+  faviconUrl: string;
 }
 
 /**
@@ -16,6 +18,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       siteName: process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
       siteDescription: "一个个人博客平台",
       logoUrl: "",
+      siteKeywords: "",
+      faviconUrl: "",
     };
   }
 
@@ -23,7 +27,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const settings = await prisma.setting.findMany({
       where: {
         key: {
-          in: ["siteName", "siteDescription", "logoUrl"],
+          in: ["site_name", "site_description", "logo_url", "site_keywords", "favicon_url"],
         },
       },
     });
@@ -34,9 +38,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     }
 
     return {
-      siteName: settingsMap["siteName"] || process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
-      siteDescription: settingsMap["siteDescription"] || "一个个人博客平台",
-      logoUrl: settingsMap["logoUrl"] || "",
+      siteName: settingsMap["site_name"] || process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
+      siteDescription: settingsMap["site_description"] || "一个个人博客平台",
+      logoUrl: settingsMap["logo_url"] || "",
+      siteKeywords: settingsMap["site_keywords"] || "",
+      faviconUrl: settingsMap["favicon_url"] || "",
     };
   } catch (error) {
     // 构建时静默失败，使用环境变量作为降级方案
@@ -45,6 +51,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         siteName: process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
         siteDescription: "一个个人博客平台",
         logoUrl: "",
+        siteKeywords: "",
+        faviconUrl: "",
       };
     }
     console.error("Failed to get site settings:", error);
@@ -52,6 +60,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       siteName: process.env.NEXT_PUBLIC_SITE_NAME || "My Blog",
       siteDescription: "一个个人博客平台",
       logoUrl: "",
+      siteKeywords: "",
+      faviconUrl: "",
     };
   }
 }

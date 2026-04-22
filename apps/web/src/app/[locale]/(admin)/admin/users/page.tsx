@@ -162,6 +162,9 @@ export default function UsersPage() {
 
       setShowEditModal(false);
       fetchUsers();
+      
+      // 触发自定义事件，通知侧边栏作者卡片刷新
+      window.dispatchEvent(new CustomEvent('avatar-updated'));
     } catch (err: any) {
       setError(err.message);
     } finally {

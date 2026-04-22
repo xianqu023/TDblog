@@ -1,10 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import ArticleCard from "@/components/public/ArticleCard";
 import { Search, Filter } from "lucide-react";
+import ChineseTwoColumnLayout from "@/components/layout/ChineseTwoColumnLayout";
 import { getWidgetConfig } from "@/app/actions/widget-config";
 import DynamicSidebar from "@/components/DynamicSidebar";
 import { DEFAULT_SIDEBAR_CONFIG } from "@/lib/sidebar-config";
 import type { Locale } from "@/lib/i18n/config";
+import { getSiteSettings } from "@/lib/site-settings";
 
 interface Article {
   id: string;
@@ -64,10 +66,44 @@ export default async function ArticlesPage({
   // Get widget config from database
   const widgetConfig = await getWidgetConfig();
   const widgets = widgetConfig?.articles || DEFAULT_SIDEBAR_CONFIG.articles;
-  const articles = await getArticles(locale);
+  
+  const [siteSettings, articles] = await Promise.all([
+    getSiteSettings(),
+    getArticles(locale)
+  ]);
+
+  // 获取分类、标签等数据
+  const categories = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/categories`,
+    { cache: "no-store" }
+  ).then(res => res.ok ? res.json() : { success: false, data: [] }).then(data => data.data || []);
+
+  const tags = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/tags?limit=10`,
+    { cache: "no-store" }
+  ).then(res => res.ok ? res.json() : { success: false, data: [] }).then(data => data.data || []);
+
+  const hotArticles = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/articles?locale=${locale}&status=PUBLISHED&page=1&limit=5&orderBy=views`,
+    { cache: "no-store" }
+  ).then(res => res.ok ? res.json() : { success: false, data: [] }).then(data => data.articles || []);
+
+  // friendLinks 和 archives API 可能不存在，使用空数组
+  const friendLinks: Array<{ name: string; url: string }> = [];
+  const authorInfo = undefined;
+  const archives: any[] = [];
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <ChineseTwoColumnLayout
+      articles={articles}
+      categories={categories}
+      tags={tags}
+      hotArticles={hotArticles}
+      authorInfo={authorInfo}
+      friendLinks={friendLinks}
+      archives={archives}
+      siteSettings={siteSettings}
+    >
       {/* Page Header */}
       <div className="mb-10">
         <div className="flex items-center mb-4">
@@ -147,6 +183,6 @@ export default async function ArticlesPage({
           </div>
         </div>
       </div>
-    </div>
+    </ChineseTwoColumnLayout>
   );
 }
