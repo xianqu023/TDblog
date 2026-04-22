@@ -71,7 +71,7 @@ async function getCategories() {
     
     const data = await response.json();
     
-    if (!data.success || !data.data) {
+    if (!data.success || !data.data || !Array.isArray(data.data)) {
       return [];
     }
     
@@ -99,7 +99,7 @@ async function getTags() {
     
     const data = await response.json();
     
-    if (!data.success || !data.data) {
+    if (!data.success || !data.data || !Array.isArray(data.data)) {
       return [];
     }
     

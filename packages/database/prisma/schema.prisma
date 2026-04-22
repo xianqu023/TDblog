@@ -27,6 +27,7 @@ model User {
   profile       UserProfile?
   roles         UserRole[]
   shares        FileShare[]
+  documents     Document[]
 
   @@map("users")
 }
@@ -164,6 +165,7 @@ model Category {
   parentId    String?           @map("parent_id")
   description String?
   articles    ArticleCategory[]
+  documents   Document[]
   parent      Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[]        @relation("CategoryHierarchy")
 
@@ -553,4 +555,48 @@ model FileShare {
   @@index([token])
   @@index([fileId])
   @@map("file_shares")
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  categoryId  String?  @map("category_id")
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId    String   @map("author_id")
+  author      User     @relation(fields: [authorId], references: [id])
+  status      DocumentStatus @default(DRAFT)
+  isPublished Boolean  @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+  viewCount   Int      @default(0) @map("view_count")
+  version     Int      @default(1)
+  parentId    String?  @map("parent_id")
+  parent      Document? @relation("DocumentVersions", fields: [parentId], references: [id], onDelete: SetNull)
+  versions    Document[] @relation("DocumentVersions")
+  tags        DocumentTag[] @relation("DocumentTags")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status])
+  @@map("documents")
+}
+
+model DocumentTag {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  slug       String   @unique
+  documents  Document[] @relation("DocumentTags")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("document_tags")
+}
+
+enum DocumentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }

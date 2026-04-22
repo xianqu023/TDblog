@@ -6,7 +6,7 @@ import crypto from 'crypto';
 // GET - 获取文件的分享链接列表
 export async function GET(
   request: Request,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -17,10 +17,10 @@ export async function GET(
       );
     }
 
-    const { fileId } = await params;
+    const { id } = await params;
     
     const shares = await prisma.fileShare.findMany({
-      where: { fileId },
+      where: { fileId: id },
       orderBy: { createdAt: 'desc' },
       include: {
         creator: {
@@ -50,7 +50,7 @@ export async function GET(
 // POST - 创建新的文件分享链接
 export async function POST(
   request: Request,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -61,13 +61,13 @@ export async function POST(
       );
     }
 
-    const { fileId } = await params;
+    const { id } = await params;
     const body = await request.json();
     const { maxDownloads, expiresAt, password } = body;
 
     // 验证文件存在
     const file = await prisma.media.findUnique({
-      where: { id: fileId },
+      where: { id },
     });
 
     if (!file) {
@@ -83,7 +83,7 @@ export async function POST(
     // 创建分享记录
     const share = await prisma.fileShare.create({
       data: {
-        fileId,
+        fileId: id,
         token,
         maxDownloads: maxDownloads ? parseInt(maxDownloads) : null,
         downloadCount: 0,
@@ -125,7 +125,7 @@ export async function POST(
 // DELETE - 删除分享链接
 export async function DELETE(
   request: Request,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -136,7 +136,7 @@ export async function DELETE(
       );
     }
 
-    const { fileId } = await params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const shareId = searchParams.get('shareId');
 
@@ -150,7 +150,7 @@ export async function DELETE(
     await prisma.fileShare.delete({
       where: { 
         id: shareId,
-        fileId,
+        fileId: id,
       },
     });
 

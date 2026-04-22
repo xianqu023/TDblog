@@ -259,7 +259,7 @@ export async function PUT(
         status: article.status,
         downloadEnabled: article.downloadEnabled,
       },
-      translationTaskId: translationTask?.id,
+      translationTaskId: null,
     });
   } catch (error) {
     console.error("Update article error:", error);

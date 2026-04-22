@@ -4,7 +4,7 @@ import { prisma } from '@blog/database';
 // GET - 验证分享链接并获取文件信息
 export async function GET(
   request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
     const { token } = await params;
@@ -23,7 +23,6 @@ export async function GET(
             mimeType: true,
             fileSize: true,
             storagePath: true,
-            url: true,
           },
         },
         creator: {

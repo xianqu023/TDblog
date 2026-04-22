@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         status: article.status,
         translations: article.translations,
       },
-      translationTaskId: translationTask?.id,
+      translationTaskId: null,
     });
   } catch (error) {
     console.error("Create article error:", error);
