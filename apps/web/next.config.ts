@@ -24,8 +24,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', 'react-icons'],
     forceSwcTransforms: false,
   },
-  // 禁用静态导出以避免 _document 错误
-  output: 'standalone',
   webpack: (config) => {
     config.ignoreWarnings = [
       { module: /node_modules/ },
