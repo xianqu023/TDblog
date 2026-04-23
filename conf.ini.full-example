@@ -1,0 +1,290 @@
+# =============================================================================
+# Blog Platform - 完整配置文件示例
+# =============================================================================
+# 使用方法：
+# 1. 复制此文件为 conf.ini
+# 2. 修改配置项为你自己的值
+# 3. 运行：node scripts/config-loader.js
+# 4. 启动服务：pnpm dev 或 pnpm start
+# =============================================================================
+
+# =============================================================================
+# 数据库配置
+# =============================================================================
+[database]
+# 数据库类型：sqlite, mysql, postgresql
+# 自动识别：如果 url 以特定协议开头，会自动覆盖此设置
+provider = sqlite
+
+# 数据库连接字符串
+# SQLite 示例: file:./packages/database/prisma/blog.db
+# MySQL 示例: mysql://user:password@localhost:3306/blog
+# PostgreSQL 示例: postgresql://user:password@localhost:5432/blog
+# Neon PostgreSQL: postgresql://user:password@ep-xxx.region.aws.neon.tech/dbname?sslmode=require
+url = file:./packages/database/prisma/blog.db
+
+# =============================================================================
+# 服务器配置
+# =============================================================================
+[server]
+# 服务端口
+port = 3000
+
+# 服务主机 (0.0.0.0 表示监听所有网络接口)
+host = 0.0.0.0
+
+# Node 环境：development, production
+node_env = production
+
+# 进程数 (使用 PM2 时有效)
+instances = 1
+
+# 最大内存限制
+max_memory = 1G
+
+# =============================================================================
+# 认证配置
+# =============================================================================
+[auth]
+# NextAuth 密钥（用于加密 session）
+# 生成随机密钥：openssl rand -base64 32
+# 如果不配置，系统会自动生成一个
+secret = your-secret-key-change-in-production
+
+# 认证回调 URL
+url = http://localhost:3000
+
+# Session 过期时间（秒），默认 30 天
+session_max_age = 2592000
+
+# =============================================================================
+# 网站配置
+# =============================================================================
+[site]
+# 网站名称
+name = My Blog
+
+# 网站 URL（不带斜杠）
+url = http://localhost:3000
+
+# 网站描述
+description = 分享技术与生活
+
+# 网站关键词
+keywords = blog, technology, life
+
+# Logo URL（相对路径或完整 URL）
+logo_url = /logo.png
+
+# Favicon URL
+favicon_url = /favicon.ico
+
+# =============================================================================
+# 文件存储配置
+# =============================================================================
+[storage]
+# 存储驱动：local, s3, oss, cos
+driver = local
+
+# --- 本地存储配置 ---
+# 本地存储根路径
+local_path = ./uploads
+
+# 本地存储访问 URL 前缀
+local_url = /uploads
+
+# 是否提供静态文件服务（生产环境建议使用 Nginx）
+serve_static = true
+
+# --- AWS S3 配置 ---
+# s3_bucket = my-bucket
+# s3_region = us-east-1
+# s3_access_key = YOUR_ACCESS_KEY
+# s3_secret_key = YOUR_SECRET_KEY
+# s3_endpoint = https://s3.amazonaws.com
+
+# --- 阿里云 OSS 配置 ---
+# oss_bucket = my-bucket
+# oss_region = oss-cn-hangzhou
+# oss_access_key = YOUR_ACCESS_KEY
+# oss_secret_key = YOUR_SECRET_KEY
+# oss_endpoint = https://oss-cn-hangzhou.aliyuncs.com
+
+# --- 腾讯云 COS 配置 ---
+# cos_bucket = my-bucket
+# cos_region = ap-guangzhou
+# cos_secret_id = YOUR_SECRET_ID
+# cos_secret_key = YOUR_SECRET_KEY
+# cos_endpoint = https://cos.ap-guangzhou.myqcloud.com
+
+# =============================================================================
+# 上传配置
+# =============================================================================
+[upload]
+# 最大文件大小（字节）
+# 10MB = 10485760, 50MB = 52428800, 100MB = 104857600
+max_size = 104857600
+
+# 按日期组织文件：true, false
+organize_by_date = true
+
+# 生成唯一文件名：true, false
+unique_filename = true
+
+# 允许的文件扩展名（逗号分隔）
+allowed_extensions = .jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.xls,.xlsx,.mp4,.mp3,.zip,.rar
+
+# =============================================================================
+# AI 配置（可选）
+# =============================================================================
+[ai]
+# OpenAI API Key
+api_key = sk-xxx
+
+# OpenAI API Base URL（可选，使用代理时配置）
+base_url = https://api.openai.com/v1
+
+# AI 模型
+model = gpt-3.5-turbo
+
+# 最大 Token 数
+max_tokens = 2000
+
+# 温度（0-2，越高越随机）
+temperature = 0.7
+
+# =============================================================================
+# CDN 配置（可选）
+# =============================================================================
+[cdn]
+# 是否启用 CDN
+enabled = false
+
+# CDN 提供商：cloudflare, aliyun, tencent, custom
+provider = custom
+
+# CDN 基础 URL
+base_url = https://cdn.example.com
+
+# CDN 缓存时间（秒）
+cache_time = 86400
+
+# =============================================================================
+# 支付配置（可选）
+# =============================================================================
+
+# --- Stripe 配置 ---
+[stripe]
+secret_key = sk_test_xxx
+publishable_key = pk_test_xxx
+webhook_secret = whsec_xxx
+currency = usd
+
+# --- PayPal 配置 ---
+[paypal]
+client_id = your-paypal-client-id
+client_secret = your-paypal-client-secret
+mode = sandbox
+# mode = production
+
+# --- 支付宝配置 ---
+[alipay]
+app_id = your-alipay-app-id
+private_key = your-alipay-private-key
+public_key = alipay-public-key
+mode = sandbox
+# mode = production
+
+# --- 微信支付配置 ---
+[wechat_pay]
+app_id = your-wechat-app-id
+mch_id = your-merchant-id
+api_key = your-api-key
+cert_path = ./certs/apiclient_cert.pem
+key_path = ./certs/apiclient_key.pem
+mode = sandbox
+# mode = production
+
+# =============================================================================
+# 邮件配置（可选，用于邮件通知）
+# =============================================================================
+[email]
+# 邮件服务提供商：smtp, sendgrid, mailgun
+provider = smtp
+
+# SMTP 配置
+smtp_host = smtp.gmail.com
+smtp_port = 587
+smtp_user = your-email@gmail.com
+smtp_pass = your-email-password
+smtp_from = noreply@example.com
+
+# =============================================================================
+# 日志配置
+# =============================================================================
+[logging]
+# 日志级别：debug, info, warn, error
+level = info
+
+# 日志文件路径
+file_path = ./logs/app.log
+
+# 日志轮转：daily, weekly, monthly
+rotate = daily
+
+# 保留日志文件数
+keep_days = 30
+
+# =============================================================================
+# 缓存配置（可选）
+# =============================================================================
+[cache]
+# 缓存驱动：memory, redis
+driver = memory
+
+# Redis 配置（使用 redis 时配置）
+# redis_host = 127.0.0.1
+# redis_port = 6379
+# redis_password = your-password
+# redis_db = 0
+
+# 缓存过期时间（秒）
+ttl = 3600
+
+# =============================================================================
+# 安全配置
+# =============================================================================
+[security]
+# 启用 CORS
+cors_enabled = false
+
+# 允许的域名（逗号分隔）
+cors_origins = http://localhost:3000,https://yourdomain.com
+
+# 速率限制（每分钟请求数）
+rate_limit = 100
+
+# 启用 CSRF 保护
+csrf_enabled = true
+
+# 信任代理（使用反向代理时配置）
+trust_proxy = false
+
+# =============================================================================
+# 性能优化配置
+# =============================================================================
+[performance]
+# 启用 Gzip 压缩
+gzip_enabled = true
+
+# 启用 HTTP/2
+http2_enabled = false
+
+# 静态资源缓存时间（秒）
+static_cache_time = 86400
+
+# 启用图片优化
+image_optimization = true
+
+# 图片质量（1-100）
+image_quality = 80

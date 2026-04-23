@@ -331,9 +331,13 @@ model HeroSlide {
 
 model Theme {
   id          String         @id @default(uuid())
+  themeId     String         @unique @map("theme_id") // 主题配置中的唯一标识符
   name        String
   slug        String         @unique
   description String?
+  version     String         @default("1.0.0")
+  author      String?
+  thumbnail   String?
   previewUrl  String?        @map("preview_url")
   isDefault   Boolean        @default(false) @map("is_default")
   isActive    Boolean        @default(true) @map("is_active")

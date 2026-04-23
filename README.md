@@ -53,75 +53,74 @@ blog/
 └── package.json                # Root monorepo config
 ```
 
-## Getting Started
+## Quick Start
 
-### Prerequisites
+### 1. Install dependencies
 
-- Node.js 20+
-- pnpm 9+
-- MySQL 8.0+ / PostgreSQL 15+ / SQLite 3.x
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <your-repo>
-cd blog
-```
-
-2. Install dependencies:
 ```bash
 pnpm install
 ```
 
-3. Set up environment variables:
+### 2. Configure environment
+
+Edit `conf.ini` file:
+
 ```bash
-cp .env.example .env.local
-# Edit .env.local with your configuration
-# Set DB_PROVIDER to mysql, postgresql, or sqlite
+vim conf.ini
 ```
 
-4. Configure database provider:
+**Minimal configuration:**
+```ini
+[database]
+provider = sqlite
+url = file:./packages/database/prisma/blog.db
 
-**MySQL** (default):
-```bash
-DB_PROVIDER=mysql
-DATABASE_URL="mysql://user:password@localhost:3306/blog"
+[auth]
+secret = your-secret-key  # Generate with: openssl rand -base64 32
+
+[site]
+name = My Blog
+url = http://localhost:3000
 ```
 
-**PostgreSQL**:
+### 3. Initialize
+
 ```bash
-DB_PROVIDER=postgresql
-DATABASE_URL="postgresql://user:password@localhost:5432/blog"
+pnpm init
 ```
 
-**SQLite**:
-```bash
-DB_PROVIDER=sqlite
-DATABASE_URL="file:./blog.db"
-```
+This will:
+- ✅ Load configuration from `conf.ini`
+- ✅ Auto-detect database type
+- ✅ Initialize database (migrations + Prisma Client)
+- ✅ Generate `.env` file
 
-5. Generate Prisma client:
-```bash
-pnpm db:generate
-```
+### 4. Start application
 
-5. Run database migrations:
-```bash
-pnpm db:push
-```
-
-6. Seed the database:
-```bash
-pnpm db:seed
-```
-
-7. Start development server:
+**Development:**
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+**Production:**
+```bash
+# Direct start
+pnpm start:prod
+
+# Or with PM2 (recommended)
+pnpm start:pm2
+```
+
+Visit: http://localhost:3000
+
+---
+
+## 📚 Documentation
+
+- 🚀 **Quick Deploy** → [QUICK_DEPLOY.md](QUICK_DEPLOY.md)
+- ⚙️ **Simplified Config** → [SIMPLIFIED_CONFIG.md](SIMPLIFIED_CONFIG.md)
+- 📦 **Full Deploy Guide** → [DEPLOY.md](DEPLOY.md)
+- 📋 **Config Template** → [conf.ini.full-example](conf.ini.full-example)
 
 ## Deployment
 

@@ -344,7 +344,7 @@ export default function ChineseTwoColumnLayout({
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className={`grid gap-8 ${layout.isTwoColumn ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1'}`}>
           {/* 左侧内容区 */}
-          <div className={`${layout.isTwoColumn ? 'lg:col-span-8' : 'col-span-1'}`}>
+          <div className={`${layout.isTwoColumn ? 'lg:col-span-8' : 'col-span-1'} min-w-0 overflow-hidden`}>
             {/* 面包屑导航 */}
             {!isArticlePage && (
               <div className="mb-6 flex items-center text-sm text-gray-600">

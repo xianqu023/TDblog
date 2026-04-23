@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
+import { useParams } from "next/navigation";
 import {
   Upload,
   Search,
@@ -20,6 +21,11 @@ import {
   Calendar,
   Hash,
   Lock,
+  FolderOpen,
+  Image,
+  Film,
+  Music,
+  File,
 } from "lucide-react";
 
 import { useDarkMode } from "@/components/admin/DarkModeProvider";
@@ -76,12 +82,15 @@ const formatFileSize = (bytes: number): string => {
 
 const getFileIcon = (mimeType: string) => {
   if (mimeType.startsWith("image/")) {
-    return <FileImage className="h-8 w-8 text-blue-500" />;
+    return <Image className="h-8 w-8 text-blue-500" />;
   }
   if (mimeType.startsWith("video/")) {
-    return <FileVideo className="h-8 w-8 text-purple-500" />;
+    return <Film className="h-8 w-8 text-purple-500" />;
   }
-  return <FileText className="h-8 w-8 text-gray-500" />;
+  if (mimeType.startsWith("audio/")) {
+    return <Music className="h-8 w-8 text-pink-500" />;
+  }
+  return <File className="h-8 w-8 text-gray-500" />;
 };
 
 const getFileCategory = (mimeType: string): string => {
@@ -95,6 +104,7 @@ const getFileCategory = (mimeType: string): string => {
 };
 
 export default function FilesPage() {
+  const params = useParams();
   const { darkMode } = useDarkMode();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -115,13 +125,12 @@ export default function FilesPage() {
 
   const cardStyle = darkMode
     ? "bg-[#1e2228]"
-    : "bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]";
+    : "bg-white/90 backdrop-blur-sm shadow-xl shadow-gray-200/50";
   const textPrimary = darkMode ? "text-gray-100" : "text-gray-900";
   const inputStyle = darkMode
     ? "bg-[#22262e] border-gray-700 text-gray-100 placeholder-gray-500"
-    : "bg-white border-gray-200 text-gray-900";
+    : "bg-gray-50 border-gray-200 text-gray-900";
 
-  // 加载文件列表
   const loadFiles = async () => {
     setLoading(true);
     try {
@@ -146,13 +155,11 @@ export default function FilesPage() {
     loadFiles();
   }, [typeFilter, searchQuery]);
 
-  // 文件上传处理
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
 
     setIsUploading(true);
 
-    // 初始化上传进度
     const initialProgress = acceptedFiles.map((file) => ({
       file,
       progress: 0,
@@ -162,7 +169,6 @@ export default function FilesPage() {
 
     let duplicateCount = 0;
 
-    // 逐个上传文件
     for (let i = 0; i < acceptedFiles.length; i++) {
       const file = acceptedFiles[i];
       const formData = new FormData();
@@ -170,7 +176,6 @@ export default function FilesPage() {
       formData.append("checkDuplicate", "true");
 
       try {
-        // 更新进度为上传中
         setUploadProgress((prev) =>
           prev.map((p, idx) => (idx === i ? { ...p, progress: 50 } : p))
         );
@@ -215,15 +220,12 @@ export default function FilesPage() {
       }
     }
 
-    // 刷新文件列表
     await loadFiles();
 
-    // 显示重复文件提示
     if (duplicateCount > 0) {
       setMessage({ type: "info", text: `已跳过 ${duplicateCount} 个重复文件` });
     }
 
-    // 3秒后清除上传进度
     setTimeout(() => {
       setUploadProgress([]);
       setIsUploading(false);
@@ -243,7 +245,6 @@ export default function FilesPage() {
     multiple: true,
   });
 
-  // 删除文件
   const handleDelete = async (fileId: string) => {
     if (!confirm("确定要删除这个文件吗？")) return;
 
@@ -263,7 +264,6 @@ export default function FilesPage() {
     }
   };
 
-  // 批量删除
   const handleBatchDelete = async () => {
     if (selectedFiles.size === 0) return;
     if (!confirm(`确定要删除选中的 ${selectedFiles.size} 个文件吗？`)) return;
@@ -287,7 +287,6 @@ export default function FilesPage() {
     }
   };
 
-  // 下载文件
   const handleDownload = async (file: FileItem) => {
     try {
       const response = await fetch(`/api/files/${file.id}`, {
@@ -296,7 +295,6 @@ export default function FilesPage() {
       const result = await response.json();
 
       if (result.success) {
-        // 创建临时链接下载
         const link = document.createElement("a");
         link.href = result.data.url;
         link.download = file.originalName;
@@ -310,7 +308,6 @@ export default function FilesPage() {
     }
   };
 
-  // 切换文件选择
   const toggleSelection = (fileId: string) => {
     setSelectedFiles((prev) => {
       const newSet = new Set(prev);
@@ -323,7 +320,6 @@ export default function FilesPage() {
     });
   };
 
-  // 全选/取消全选
   const toggleSelectAll = () => {
     if (selectedFiles.size === files.length) {
       setSelectedFiles(new Set());
@@ -332,12 +328,10 @@ export default function FilesPage() {
     }
   };
 
-  // 打开分享链接管理
   const handleOpenShare = async (fileId: string) => {
     setCurrentFileId(fileId);
     setShowShareModal(true);
     
-    // 加载该文件的所有分享链接
     try {
       const response = await fetch(`/api/files/${fileId}/shares`);
       const result = await response.json();
@@ -349,7 +343,6 @@ export default function FilesPage() {
     }
   };
 
-  // 创建分享链接
   const handleCreateShare = async () => {
     if (!currentFileId) return;
 
@@ -379,7 +372,6 @@ export default function FilesPage() {
     }
   };
 
-  // 删除分享链接
   const handleDeleteShare = async (shareId: string) => {
     if (!currentFileId) return;
 
@@ -400,7 +392,6 @@ export default function FilesPage() {
     }
   };
 
-  // 复制链接
   const copyShareLink = (token: string) => {
     const url = `${window.location.origin}/s/${token}`;
     navigator.clipboard.writeText(url);
@@ -408,347 +399,401 @@ export default function FilesPage() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">附件管理</h2>
-          <p className="text-gray-600 mt-1">管理所有上传的文件</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-red-50/30 to-slate-100">
+      {/* 装饰性背景 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-100 rounded-full blur-3xl opacity-30" />
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-amber-100 rounded-full blur-3xl opacity-30" />
+        <div className="absolute -bottom-40 right-1/3 w-80 h-80 bg-orange-100 rounded-full blur-3xl opacity-30" />
+      </div>
+
+      <div className="relative">
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-red-100 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg shadow-amber-500/30">
+                    <FolderOpen className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                      文件管理
+                    </h2>
+                    <p className="text-gray-600 mt-1 text-sm">管理所有上传的文件</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {selectedFiles.size > 0 && (
+                  <button
+                    onClick={handleBatchDelete}
+                    className="group flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-0.5"
+                  >
+                    <Trash className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
+                    <span className="font-medium">删除选中 ({selectedFiles.size})</span>
+                  </button>
+                )}
+                <button
+                  {...getRootProps()}
+                  className="group flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <input {...getInputProps()} />
+                  <Upload className="h-5 w-5 mr-2 group-hover:rotate-12 transition-transform" />
+                  <span className="font-medium">上传文件</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center space-x-3">
-          {selectedFiles.size > 0 && (
-            <button
-              onClick={handleBatchDelete}
-              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              <Trash className="h-5 w-5 mr-2" />
-              删除选中 ({selectedFiles.size})
-            </button>
+
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Upload Progress */}
+          {uploadProgress.length > 0 && (
+            <div className={`${cardStyle} rounded-2xl p-6 mb-8 border border-gray-100`}>
+              <h4 className={`font-semibold ${textPrimary} mb-4 flex items-center gap-2`}>
+                <Loader2 className={`h-5 w-5 ${isUploading ? 'animate-spin' : ''} text-amber-500`} />
+                上传进度
+              </h4>
+              <div className="space-y-3">
+                {uploadProgress.map((item, index) => (
+                  <div key={`upload-${item.file.name}-${index}`} className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700 truncate max-w-md">
+                          {item.file.name}
+                        </span>
+                        <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                          {item.status === "uploading" && (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          )}
+                          {item.status === "success" && (
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                          )}
+                          {item.status === "error" && (
+                            <AlertCircle className="h-3 w-3 text-red-500" />
+                          )}
+                          {item.status === "error"
+                            ? item.error
+                            : `${item.progress}%`}
+                        </span>
+                      </div>
+                      <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 rounded-full ${
+                            item.status === "error"
+                              ? "bg-gradient-to-r from-red-500 to-red-600"
+                              : item.status === "success"
+                              ? "bg-gradient-to-r from-green-500 to-green-600"
+                              : "bg-gradient-to-r from-amber-500 to-orange-500"
+                          }`}
+                          style={{ width: `${item.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-          <button
+
+          {/* Drop Zone */}
+          <div
             {...getRootProps()}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+            className={`bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-gray-200/50 border-2 border-dashed p-12 mb-8 text-center cursor-pointer transition-all duration-300 ${
+              isDragActive
+                ? "border-amber-500 bg-gradient-to-br from-amber-50 to-orange-50 scale-[1.02]"
+                : "border-gray-200 hover:border-amber-400 hover:shadow-2xl"
+            }`}
           >
             <input {...getInputProps()} />
-            <Upload className="h-5 w-5 mr-2" />
-            上传文件
-          </button>
-        </div>
-      </div>
-
-      {/* Upload Progress */}
-      {uploadProgress.length > 0 && (
-        <div className={`${cardStyle} rounded-xl shadow-sm p-4 mb-6`}>
-          <h4 className={`font-medium ${textPrimary} mb-3`}>上传进度</h4>
-          <div className="space-y-2">
-            {uploadProgress.map((item, index) => (
-              <div key={`upload-${item.file.name}-${index}`} className="flex items-center space-x-3">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-700 truncate max-w-xs">
-                      {item.file.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {item.status === "uploading" && (
-                        <Loader2 className="h-4 w-4 animate-spin inline mr-1" />
-                      )}
-                      {item.status === "success" && (
-                        <CheckCircle className="h-4 w-4 text-green-500 inline mr-1" />
-                      )}
-                      {item.status === "error" && (
-                        <AlertCircle className="h-4 w-4 text-red-500 inline mr-1" />
-                      )}
-                      {item.status === "error"
-                        ? item.error
-                        : `${item.progress}%`}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        item.status === "error"
-                          ? "bg-red-500"
-                          : item.status === "success"
-                          ? "bg-green-500"
-                          : "bg-blue-500"
-                      }`}
-                      style={{ width: `${item.progress}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Drop Zone */}
-      <div
-        {...getRootProps()}
-        className={`bg-white rounded-xl shadow-sm border-2 border-dashed p-8 mb-6 text-center cursor-pointer transition-colors ${
-          isDragActive
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-200 hover:border-blue-400"
-        }`}
-      >
-        <input {...getInputProps()} />
-        <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-lg font-medium text-gray-700 mb-2">
-          {isDragActive ? "松开以上传文件" : "拖拽文件到这里上传"}
-        </p>
-        <p className="text-sm text-gray-500">或点击选择文件</p>
-        <p className="text-xs text-gray-400 mt-2">
-          支持图片、视频、文档等格式，单个文件最大 100MB
-        </p>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="搜索文件..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full mb-6">
+              <Upload className="h-10 w-10 text-amber-600" />
             </div>
+            <p className="text-lg font-semibold text-gray-700 mb-2">
+              {isDragActive ? "松开以上传文件" : "拖拽文件到这里上传"}
+            </p>
+            <p className="text-sm text-gray-500 mb-3">或点击选择文件</p>
+            <p className="text-xs text-gray-400">
+              支持图片、视频、文档等格式，单个文件最大 100MB
+            </p>
           </div>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">所有类型</option>
-            <option value="image">图片</option>
-            <option value="video">视频</option>
-            <option value="document">文档</option>
-            <option value="audio">音频</option>
-          </select>
-          <div className="flex items-center border rounded-lg overflow-hidden">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`px-3 py-2 ${
-                viewMode === "grid"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-600"
-              }`}
-            >
-              网格
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-2 border-l ${
-                viewMode === "list"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-600"
-              }`}
-            >
-              列表
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-600">加载中...</span>
-        </div>
-      )}
-
-      {/* Files Grid/List */}
-      {!loading && files.length === 0 ? (
-        <div className="text-center py-12">
-          <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">暂无文件</p>
-          <p className="text-sm text-gray-400 mt-1">点击上方上传按钮添加文件</p>
-        </div>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {files.map((file) => (
-            <div
-              key={file.id}
-              className={`bg-white rounded-xl shadow-sm p-4 group hover:shadow-lg transition-all ${
-                selectedFiles.has(file.id) ? "ring-2 ring-blue-500" : ""
-              }`}
-            >
-              <div className="flex items-center justify-center h-32 mb-3">
-                {getFileCategory(file.mimeType) === "image" ? (
-                  <img
-                    src={file.url}
-                    alt={file.originalName}
-                    className="h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  getFileIcon(file.mimeType)
-                )}
-              </div>
-              <h4 className="text-sm font-medium text-gray-900 truncate mb-1">
-                {file.originalName}
-              </h4>
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                <span>{formatFileSize(file.size)}</span>
-                <span>{new Date(file.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <input
-                  type="checkbox"
-                  checked={selectedFiles.has(file.id)}
-                  onChange={() => toggleSelection(file.id)}
-                  className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handleOpenShare(file.id)}
-                    className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                    title="分享链接"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDownload(file)}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    <Download className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(file.id)}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3">
+          {/* Filters */}
+          <div className={`${cardStyle} rounded-2xl p-6 mb-8 border border-gray-100`}>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[280px]">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
-                    type="checkbox"
-                    checked={selectedFiles.size === files.length && files.length > 0}
-                    onChange={toggleSelectAll}
-                    className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                    type="text"
+                    placeholder="搜索文件名称..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full pl-12 pr-4 py-3 ${inputStyle} rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium`}
                   />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  文件名
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  类型
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  大小
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  上传时间
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {files.map((file) => (
-                <tr
-                  key={file.id}
-                  className={`hover:bg-gray-50 ${
-                    selectedFiles.has(file.id) ? "bg-blue-50" : ""
+                </div>
+              </div>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className={`px-5 py-3 ${inputStyle} rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium cursor-pointer`}
+              >
+                <option value="">所有类型</option>
+                <option value="image">🖼️ 图片</option>
+                <option value="video">🎬 视频</option>
+                <option value="document">📄 文档</option>
+                <option value="audio">🎵 音频</option>
+              </select>
+              <div className="flex items-center bg-gray-100 rounded-xl p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-4 py-2.5 rounded-lg transition-all font-medium ${
+                    viewMode === "grid"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md"
+                      : "text-gray-600 hover:bg-white"
                   }`}
                 >
-                  <td className="px-4 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedFiles.has(file.id)}
-                      onChange={() => toggleSelection(file.id)}
-                      className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center mr-3">
-                        {getFileIcon(file.mimeType)}
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                        {file.originalName}
-                      </span>
+                  网格
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-4 py-2.5 rounded-lg transition-all font-medium ${
+                    viewMode === "list"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md"
+                      : "text-gray-600 hover:bg-white"
+                  }`}
+                >
+                  列表
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading */}
+          {loading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent" />
+              <span className="ml-3 text-gray-600 font-medium">加载中...</span>
+            </div>
+          )}
+
+          {/* Files Grid/List */}
+          {!loading && files.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
+                <FolderOpen className="h-12 w-12 text-gray-400" />
+              </div>
+              <p className="text-gray-500 text-lg font-medium">暂无文件</p>
+              <p className="text-sm text-gray-400 mt-2">点击上方上传按钮或拖拽文件到这里</p>
+            </div>
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+              {files.map((file) => (
+                <div
+                  key={file.id}
+                  className={`group bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg shadow-gray-200/50 p-4 border border-gray-100 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 ${
+                    selectedFiles.has(file.id) ? "ring-2 ring-amber-500 shadow-amber-500/20" : ""
+                  }`}
+                >
+                  <div className="relative">
+                    <div className="flex items-center justify-center h-40 mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                      {getFileCategory(file.mimeType) === "image" ? (
+                        <img
+                          src={file.url}
+                          alt={file.originalName}
+                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="p-6">
+                          {getFileIcon(file.mimeType)}
+                        </div>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {getFileCategory(file.mimeType)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {formatFileSize(file.size)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {new Date(file.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => handleOpenShare(file.id)}
-                        className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="分享链接"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDownload(file)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(file.id)}
-                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </button>
+                    <div className="absolute top-2 left-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedFiles.has(file.id)}
+                        onChange={() => toggleSelection(file.id)}
+                        className="h-5 w-5 text-amber-600 rounded-lg border-gray-300 focus:ring-amber-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-900 truncate mb-2">
+                    {file.originalName}
+                  </h4>
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <span className="font-medium text-amber-600">{formatFileSize(file.size)}</span>
+                    <span>{new Date(file.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+                    <button
+                      onClick={() => handleOpenShare(file.id)}
+                      className="flex-1 p-2.5 text-green-600 hover:bg-green-50 rounded-xl transition-all hover:shadow-md"
+                      title="分享链接"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDownload(file)}
+                      className="flex-1 p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all hover:shadow-md"
+                      title="下载"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(file.id)}
+                      className="flex-1 p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all hover:shadow-md"
+                      title="删除"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          ) : (
+            <div className={`${cardStyle} rounded-2xl overflow-hidden border border-gray-100`}>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                      <th className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedFiles.size === files.length && files.length > 0}
+                          onChange={toggleSelectAll}
+                          className="h-5 w-5 text-amber-600 rounded-lg border-gray-300 focus:ring-amber-500 cursor-pointer"
+                        />
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        文件信息
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        类型
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        大小
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        上传时间
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        操作
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {files.map((file) => (
+                      <tr
+                        key={file.id}
+                        className={`group hover:bg-gradient-to-r hover:from-amber-50/50 hover:to-transparent transition-all duration-200 ${
+                          selectedFiles.has(file.id) ? "bg-amber-50/80" : ""
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedFiles.has(file.id)}
+                            onChange={() => toggleSelection(file.id)}
+                            className="h-5 w-5 text-amber-600 rounded-lg border-gray-300 focus:ring-amber-500 cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center shadow-sm">
+                              {getFileIcon(file.mimeType)}
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900 truncate max-w-xs">
+                              {file.originalName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
+                            getFileCategory(file.mimeType) === "image"
+                              ? "bg-blue-100 text-blue-700"
+                              : getFileCategory(file.mimeType) === "video"
+                              ? "bg-purple-100 text-purple-700"
+                              : getFileCategory(file.mimeType) === "audio"
+                              ? "bg-pink-100 text-pink-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}>
+                            {getFileCategory(file.mimeType)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-amber-600">
+                          {formatFileSize(file.size)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {new Date(file.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenShare(file.id)}
+                              className="group p-2.5 text-green-600 hover:bg-green-50 rounded-xl transition-all hover:shadow-md"
+                              title="分享链接"
+                            >
+                              <Share2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                            </button>
+                            <button
+                              onClick={() => handleDownload(file)}
+                              className="group p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all hover:shadow-md"
+                              title="下载"
+                            >
+                              <Download className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(file.id)}
+                              className="group p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all hover:shadow-md"
+                              title="删除"
+                            >
+                              <Trash className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className={`${cardStyle} rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
               <div>
-                <h3 className={`text-xl font-bold ${textPrimary}`}>分享链接管理</h3>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
+                  分享链接管理
+                </h3>
                 <p className="text-sm text-gray-500 mt-1">创建和管理文件分享链接</p>
               </div>
               <button
                 onClick={() => setShowShareModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
               >
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-8 space-y-6">
               {/* Create New Share */}
-              <div className={`${cardStyle} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}>
-                <h4 className={`font-medium ${textPrimary} mb-4`}>创建新分享链接</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className={`${cardStyle} rounded-2xl p-6 border border-gray-100`}>
+                <h4 className={`font-semibold ${textPrimary} mb-5 flex items-center gap-2`}>
+                  <LinkIcon className="h-5 w-5 text-amber-500" />
+                  创建新分享链接
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      <Hash className="inline w-4 h-4 mr-1" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <Hash className="inline w-4 h-4 mr-1 text-amber-500" />
                       下载次数限制
                     </label>
                     <input
@@ -756,24 +801,24 @@ export default function FilesPage() {
                       value={shareSettings.maxDownloads}
                       onChange={(e) => setShareSettings({ ...shareSettings, maxDownloads: e.target.value })}
                       placeholder="留空表示无限制"
-                      className={`w-full px-3 py-2 ${inputStyle} rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+                      className={`w-full px-4 py-3 ${inputStyle} rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      <Calendar className="inline w-4 h-4 mr-1" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <Calendar className="inline w-4 h-4 mr-1 text-amber-500" />
                       有效期至
                     </label>
                     <input
                       type="datetime-local"
                       value={shareSettings.expiresAt}
                       onChange={(e) => setShareSettings({ ...shareSettings, expiresAt: e.target.value })}
-                      className={`w-full px-3 py-2 ${inputStyle} rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+                      className={`w-full px-4 py-3 ${inputStyle} rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      <Lock className="inline w-4 h-4 mr-1" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <Lock className="inline w-4 h-4 mr-1 text-amber-500" />
                       访问密码
                     </label>
                     <input
@@ -781,13 +826,13 @@ export default function FilesPage() {
                       value={shareSettings.password}
                       onChange={(e) => setShareSettings({ ...shareSettings, password: e.target.value })}
                       placeholder="留空表示无需密码"
-                      className={`w-full px-3 py-2 ${inputStyle} rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+                      className={`w-full px-4 py-3 ${inputStyle} rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all`}
                     />
                   </div>
                 </div>
                 <button
                   onClick={handleCreateShare}
-                  className="w-full py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all font-medium"
+                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30 font-semibold"
                 >
                   创建分享链接
                 </button>
@@ -795,56 +840,64 @@ export default function FilesPage() {
 
               {/* Share Links List */}
               <div>
-                <h4 className={`font-medium ${textPrimary} mb-4`}>已有分享链接 ({shares.length})</h4>
+                <h4 className={`font-semibold ${textPrimary} mb-5 flex items-center gap-2`}>
+                  <Share2 className="h-5 w-5 text-amber-500" />
+                  已有分享链接 ({shares.length})
+                </h4>
                 {shares.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <LinkIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>暂无分享链接</p>
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+                      <LinkIcon className="h-10 w-10 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500">暂无分享链接</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {shares.map((share) => (
                       <div
                         key={share.id}
-                        className={`${cardStyle} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}
+                        className={`${cardStyle} rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all`}
                       >
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                                {window.location.origin}/s/{share.token}
+                            <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-xl">
+                              <code className="text-sm font-mono text-gray-700 flex-1">
+                                {window.location.origin}/{params?.locale || 'zh'}/s/{share.token}
                               </code>
                               <button
                                 onClick={() => copyShareLink(share.token)}
-                                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                                className="p-2 hover:bg-white rounded-lg transition-colors"
                               >
                                 <Copy className="h-4 w-4 text-gray-500" />
                               </button>
                             </div>
-                            <div className="flex items-center space-x-4 text-sm text-gray-500">
-                              <span className="flex items-center">
-                                <Hash className="h-4 w-4 mr-1" />
-                                已下载：{share.downloadCount}{share.maxDownloads ? `/${share.maxDownloads}` : ''}
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-lg">
+                                <Hash className="h-4 w-4 text-amber-500" />
+                                <span className="font-medium">已下载：{share.downloadCount}</span>
+                                {share.maxDownloads && (
+                                  <span className="text-gray-400">/{share.maxDownloads}</span>
+                                )}
                               </span>
                               {share.expiresAt && (
-                                <span className="flex items-center">
-                                  <Calendar className="h-4 w-4 mr-1" />
-                                  过期：{new Date(share.expiresAt).toLocaleString('zh-CN')}
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 rounded-lg">
+                                  <Calendar className="h-4 w-4 text-orange-500" />
+                                  <span className="font-medium">过期：{new Date(share.expiresAt).toLocaleString('zh-CN')}</span>
                                 </span>
                               )}
                               {share.password && (
-                                <span className="flex items-center">
-                                  <Lock className="h-4 w-4 mr-1" />
-                                  需要密码
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 rounded-lg">
+                                  <Lock className="h-4 w-4 text-red-500" />
+                                  <span className="font-medium">需要密码</span>
                                 </span>
                               )}
                             </div>
                           </div>
                           <button
                             onClick={() => handleDeleteShare(share.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all hover:shadow-md"
                           >
-                            <Trash className="h-4 w-4" />
+                            <Trash className="h-5 w-5" />
                           </button>
                         </div>
                       </div>
@@ -854,11 +907,10 @@ export default function FilesPage() {
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-3xl">
               <button
                 onClick={() => setShowShareModal(false)}
-                className="w-full py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all font-medium"
+                className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
               >
                 关闭
               </button>

@@ -8,6 +8,8 @@ export async function GET(
 ) {
   try {
     const { token } = await params;
+    console.log('验证分享链接，token:', token);
+    
     const { searchParams } = new URL(request.url);
     const password = searchParams.get('password');
 
@@ -15,29 +17,16 @@ export async function GET(
     const share = await prisma.fileShare.findUnique({
       where: { token },
       include: {
-        file: {
-          select: {
-            id: true,
-            filename: true,
-            originalName: true,
-            mimeType: true,
-            fileSize: true,
-            storagePath: true,
-          },
-        },
-        creator: {
-          select: {
-            username: true,
-            profile: {
-              select: {
-                displayName: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
+        file: true,
+        creator: true,
       },
     });
+
+    console.log('分享记录:', share ? '找到' : '未找到');
+    if (share) {
+      console.log('文件信息:', share.file);
+      console.log('创建者信息:', share.creator);
+    }
 
     if (!share) {
       return NextResponse.json(
@@ -81,19 +70,16 @@ export async function GET(
       }
     }
 
-    // 增加下载次数
-    await prisma.fileShare.update({
-      where: { id: share.id },
-      data: {
-        downloadCount: share.downloadCount + 1,
-        lastDownloadedAt: new Date(),
-      },
-    });
+    // 注意：这里不增加下载次数，只在下载时增加
+    // 验证链接时不应该消耗下载次数
 
     return NextResponse.json({
       success: true,
       data: {
-        file: share.file,
+        file: {
+          ...share.file,
+          fileSize: share.file.fileSize.toString(), // BigInt 转字符串
+        },
         sharedBy: share.creator,
         expiresAt: share.expiresAt,
         remainingDownloads: share.maxDownloads !== null 

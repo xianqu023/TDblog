@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
       // 创建新主题
       await prisma.theme.create({
         data: {
+          themeId: slug,
           slug,
           name: themeName,
           config,

@@ -19,21 +19,13 @@ export interface ThemeTemplate {
  */
 export const THEME_TEMPLATES: ThemeTemplate[] = [
   {
-    id: "default",
-    name: "默认主题",
-    slug: "default",
-    description: "TDblog 默认主题，简洁实用的单栏布局",
-    features: ["简洁布局", "响应式设计", "侧边栏组件", "广告位支持"],
-    category: "minimal",
-    isDefault: true,
-  },
-  {
     id: "elegant-two-column",
     name: "优雅双栏",
     slug: "elegant-two-column",
     description: "现代化的双栏布局，适合内容丰富的博客",
     features: ["双栏布局", "特色轮播", "分类展示", "标签云", "友情链接"],
     category: "modern",
+    isDefault: true,
   },
   {
     id: "chinese-two-column",
@@ -42,6 +34,14 @@ export const THEME_TEMPLATES: ThemeTemplate[] = [
     description: "融合中国传统美学元素的双栏布局主题",
     features: ["中国风设计", "古典配色", "双栏布局", "13 个侧边栏组件", "5 个广告位", "SEO 优化"],
     category: "classic",
+  },
+  {
+    id: "minimal",
+    name: "极简阅读",
+    slug: "minimal",
+    description: "纯白极简设计，专注阅读体验，适合文字类博客",
+    features: ["极简布局", "专注阅读", "快速加载", "响应式设计"],
+    category: "minimal",
   },
 ];
 

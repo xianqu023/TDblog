@@ -252,7 +252,6 @@ export default async function HomePage({
 
   // 根据主题 slug 渲染不同的页面
   if (activeTheme?.slug === 'chinese-two-column') {
-    // 使用中式双栏布局渲染
     const ChineseTwoColumnLayout = (await import('@/components/layout/ChineseTwoColumnLayout')).default;
     
     return (
@@ -265,17 +264,61 @@ export default async function HomePage({
       >
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">首页</h1>
-          {/* 其他默认主题内容 */}
         </div>
       </ChineseTwoColumnLayout>
     );
   }
 
-  // 默认主题渲染逻辑（简化）
+  if (activeTheme?.slug === 'elegant-two-column') {
+    const ElegantTwoColumnLayout = (await import('@/components/layout/ElegantTwoColumnLayout')).default;
+    
+    return (
+      <ElegantTwoColumnLayout
+        articles={initialArticles}
+        categories={categories}
+        tags={hotTags}
+        hotArticles={hotArticles}
+        archives={archives}
+      >
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8">首页</h1>
+        </div>
+      </ElegantTwoColumnLayout>
+    );
+  }
+
+  if (activeTheme?.slug === 'minimal') {
+    const MinimalLayout = (await import('@/components/layout/MinimalLayout')).default;
+    
+    return (
+      <MinimalLayout
+        articles={initialArticles}
+        categories={categories}
+        tags={hotTags}
+        hotArticles={hotArticles}
+        archives={archives}
+      >
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8">首页</h1>
+        </div>
+      </MinimalLayout>
+    );
+  }
+
+  // 默认使用优雅双栏
+  const ElegantTwoColumnLayout = (await import('@/components/layout/ElegantTwoColumnLayout')).default;
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">首页</h1>
-      {/* 其他默认主题内容 */}
-    </div>
+    <ElegantTwoColumnLayout
+      articles={initialArticles}
+      categories={categories}
+      tags={hotTags}
+      hotArticles={hotArticles}
+      archives={archives}
+    >
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">首页</h1>
+      </div>
+    </ElegantTwoColumnLayout>
   );
 }

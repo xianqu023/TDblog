@@ -23,6 +23,8 @@ import {
   Sparkles,
   Image,
   GripVertical,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import SliderConfig from "@/components/admin/SliderConfig";
 import {
@@ -118,6 +120,8 @@ export default function ThemeSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [widgetOrder, setWidgetOrder] = useState<string[]>([]);
+  const [themes, setThemes] = useState<any[]>([]);
+  const [currentTheme, setCurrentTheme] = useState<string>("chinese-two-column");
 
   // 初始化组件顺序
   useEffect(() => {
@@ -139,39 +143,46 @@ export default function ThemeSettingsPage() {
     })
   );
 
-  // 加载主题配置
+  // 加载主题列表和配置
   useEffect(() => {
-    const loadThemeConfig = async () => {
+    const loadThemes = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/admin/themes?active=true");
+        // 获取所有主题
+        const res = await fetch("/api/themes");
         const data = await res.json();
         
-        if (data.success && data.themes && data.themes.length > 0) {
-          const theme = data.themes[0];
-          if (theme.config) {
-            setConfig({
-              ...DEFAULT_CONFIG,
-              ...theme.config,
-              sidebarWidgets: {
-                ...DEFAULT_CONFIG.sidebarWidgets,
-                ...(theme.config.sidebarWidgets || {}),
-              },
-              adSlots: {
-                ...DEFAULT_CONFIG.adSlots,
-                ...(theme.config.adSlots || {}),
-              },
-            });
+        if (data.themes) {
+          setThemes(data.themes);
+          
+          // 找到当前激活的主题
+          const activeTheme = data.themes.find((t: any) => t.isActive) || data.themes.find((t: any) => t.isDefault);
+          if (activeTheme) {
+            setCurrentTheme(activeTheme.slug);
+            if (activeTheme.config) {
+              setConfig({
+                ...DEFAULT_CONFIG,
+                ...activeTheme.config,
+                sidebarWidgets: {
+                  ...DEFAULT_CONFIG.sidebarWidgets,
+                  ...(activeTheme.config.sidebarWidgets || {}),
+                },
+                adSlots: {
+                  ...DEFAULT_CONFIG.adSlots,
+                  ...(activeTheme.config.adSlots || {}),
+                },
+              });
+            }
           }
         }
       } catch (error) {
-        console.error("Failed to load theme:", error);
+        console.error("Failed to load themes:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadThemeConfig();
+    loadThemes();
   }, []);
 
   // 保存配置
@@ -180,32 +191,25 @@ export default function ThemeSettingsPage() {
     setMessage(null);
 
     try {
-      // 1. 保存主题配置（直接调用前台 API，确保数据结构一致）
-      const response = await fetch("/api/theme-config", {
-        method: "POST",
+      // 找到当前主题
+      const currentThemeData = themes.find(t => t.slug === currentTheme);
+      
+      if (!currentThemeData) {
+        setMessage({ type: "error", text: "未找到当前主题" });
+        return;
+      }
+
+      // 保存主题配置
+      const response = await fetch(`/api/themes/${currentThemeData.id}/config`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          config,
-        }),
+        body: JSON.stringify(config),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // 2. 激活主题
-        const activateResponse = await fetch("/api/admin/themes/activate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug: "chinese-two-column" }),
-        });
-
-        const activateData = await activateResponse.json();
-
-        if (activateData.success) {
-          setMessage({ type: "success", text: "主题配置已保存并激活，前端实时生效" });
-        } else {
-          setMessage({ type: "success", text: "配置已保存，但激活失败" });
-        }
+        setMessage({ type: "success", text: "主题配置已保存并应用到所有页面" });
         setTimeout(() => setMessage(null), 3000);
       } else {
         setMessage({ type: "error", text: data.message || "保存失败" });
@@ -317,83 +321,154 @@ export default function ThemeSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       {/* 顶部标题栏 */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Palette className="w-6 h-6 text-[#C41E3A]" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">中式双栏主题设置</h1>
-              <p className="text-sm text-gray-500">融合中国传统美学元素的双栏布局主题</p>
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30">
+                <Palette className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">主题管理中心</h1>
+                <p className="text-sm text-gray-500 mt-1">统一管理所有主题配置，实时切换预览</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 px-5 py-3 text-sm text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+              >
+                <RotateCcw className="w-4 h-4" />
+                重置配置
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-blue-500/30 transition-all"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? "保存中..." : "一键保存"}
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              <RotateCcw className="w-4 h-4" />
-              重置配置
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2 bg-[#C41E3A] text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? "保存中..." : "一键保存"}
-            </button>
+          
+          {/* 主题选择器 */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-100 shadow-sm">
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                <label className="text-sm font-medium text-gray-700">当前主题：</label>
+              </div>
+              <select
+                value={currentTheme}
+                onChange={async (e) => {
+                  const selectedSlug = e.target.value;
+                  const selectedTheme = themes.find(t => t.slug === selectedSlug);
+                  
+                  if (selectedTheme) {
+                    // 激活主题
+                    const res = await fetch(`/api/themes/${selectedTheme.id}/activate`, {
+                      method: 'POST',
+                    });
+                    
+                    if (res.ok) {
+                      setCurrentTheme(selectedSlug);
+                      setConfig({
+                        ...DEFAULT_CONFIG,
+                        ...selectedTheme.config,
+                        sidebarWidgets: {
+                          ...DEFAULT_CONFIG.sidebarWidgets,
+                          ...(selectedTheme.config?.sidebarWidgets || {}),
+                        },
+                        adSlots: {
+                          ...DEFAULT_CONFIG.adSlots,
+                          ...(selectedTheme.config?.adSlots || {}),
+                        },
+                      });
+                      setMessage({ type: "success", text: `已切换到 ${selectedTheme.name}` });
+                      setTimeout(() => setMessage(null), 3000);
+                    }
+                  }
+                }}
+                className="flex-1 max-w-md px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {themes.map((theme) => (
+                  <option key={theme.id} value={theme.slug}>
+                    {theme.name} {theme.isDefault && '(默认)'} {theme.isActive && '(当前)'}
+                  </option>
+                ))}
+              </select>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200 text-sm text-gray-600">
+                <LayoutGrid className="w-4 h-4" />
+                <span>共 {themes.length} 个主题</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 消息提示 */}
       {message && (
-        <div
-          className={`mx-6 mt-4 p-4 rounded-lg flex items-center gap-2 ${
-            message.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
-          <span>{message.text}</span>
+        <div className="px-8">
+          <div
+            className={`mt-6 p-5 rounded-xl flex items-center gap-3 border shadow-sm ${
+              message.type === "success"
+                ? "bg-green-50 text-green-800 border-green-200"
+                : "bg-red-50 text-red-800 border-red-200"
+            }`}
+          >
+            {message.type === "success" ? (
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            ) : (
+              <AlertCircle className="w-6 h-6 text-red-600" />
+            )}
+            <span className="font-medium">{message.text}</span>
+          </div>
         </div>
       )}
 
       <div className="flex">
         {/* 左侧标签导航 */}
-        <div className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-140px)] py-4">
+        <div className="w-72 bg-white/80 backdrop-blur-sm border-r border-gray-200 min-h-[calc(100vh-220px)] py-6 px-4 sticky top-[160px] mt-6 mx-4 rounded-2xl shadow-sm">
+          <div className="mb-4 px-2">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">配置分类</div>
+          </div>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`w-full flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-all rounded-xl mb-1 ${
                   activeTab === tab.key
-                    ? "bg-[#C41E3A] text-white"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 font-medium border border-blue-100 shadow-sm"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{tab.label}</span>
+                <Icon className={`w-5 h-5 ${activeTab === tab.key ? "text-blue-600" : "text-gray-400"}`} />
+                <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* 右侧配置内容 */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-8">
           {/* 全局设置 */}
           {activeTab === "global" && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
-                  主题全局开关
-                </h2>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-8">
+                <div className="flex items-center gap-4 mb-8 pb-5 border-b border-gray-200">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-md shadow-blue-500/30">
+                    <Globe className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">主题全局开关</h2>
+                    <p className="text-sm text-gray-500 mt-1">控制主题的基础配置和视觉效果</p>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-gray-700">启用主题</label>
@@ -534,7 +609,16 @@ export default function ThemeSettingsPage() {
           {/* 幻灯片配置 */}
           {activeTab === "slider" && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-8">
+                <div className="flex items-center gap-4 mb-8 pb-5 border-b border-gray-200">
+                  <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-md shadow-purple-500/30">
+                    <Image className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">幻灯片配置</h2>
+                    <p className="text-sm text-gray-500 mt-1">管理首页幻灯片和广告位展示</p>
+                  </div>
+                </div>
                 <SliderConfig
                   sliderEnable={config.slider?.sliderEnable ?? true}
                   sliderArticleCount={config.slider?.sliderArticleCount ?? 3}
@@ -560,93 +644,108 @@ export default function ThemeSettingsPage() {
           {/* 布局配置 */}
           {activeTab === "layout" && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Monitor className="w-5 h-5" />
-                  布局配置
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">双栏布局</p>
-                      <p className="text-sm text-gray-500">启用侧边栏显示</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-8">
+                <div className="flex items-center gap-4 mb-8 pb-5 border-b border-gray-200">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-md shadow-blue-500/30">
+                    <LayoutGrid className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">布局配置</h2>
+                    <p className="text-sm text-gray-500 mt-1">自定义页面布局和展示方式</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-gray-900">双栏布局</p>
+                        <p className="text-sm text-gray-500 mt-1">启用侧边栏显示</p>
+                      </div>
+                      <button
+                        onClick={() => setConfig({ ...config, layout: { ...config.layout, isTwoColumn: !config.layout.isTwoColumn } })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.layout.isTwoColumn ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.layout.isTwoColumn ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setConfig({ ...config, layout: { ...config.layout, isTwoColumn: !config.layout.isTwoColumn } })}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.layout.isTwoColumn ? "bg-[#C41E3A]" : "bg-gray-200"
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.layout.isTwoColumn ? "translate-x-6" : "translate-x-1"
-                      }`} />
-                    </button>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">侧边栏位置</p>
-                      <p className="text-sm text-gray-500">选择侧边栏在左侧或右侧</p>
+                  <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-gray-900">侧边栏位置</p>
+                        <p className="text-sm text-gray-500 mt-1">选择侧边栏在左侧或右侧</p>
+                      </div>
+                      <button
+                        onClick={() => setConfig({ ...config, layout: { ...config.layout, sidebarPosition: !config.layout.sidebarPosition || config.layout.sidebarPosition === "right" ? "left" : "right" } })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.layout.sidebarPosition === "right" ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.layout.sidebarPosition === "right" ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setConfig({ ...config, layout: { ...config.layout, sidebarPosition: !config.layout.sidebarPosition || config.layout.sidebarPosition === "right" ? "left" : "right" } })}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.layout.sidebarPosition === "right" ? "bg-[#C41E3A]" : "bg-gray-200"
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.layout.sidebarPosition === "right" ? "translate-x-6" : "translate-x-1"
-                      }`} />
-                    </button>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">粘性侧边栏</p>
-                      <p className="text-sm text-gray-500">滚动时侧边栏固定</p>
+                  <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-gray-900">粘性侧边栏</p>
+                        <p className="text-sm text-gray-500 mt-1">滚动时侧边栏固定</p>
+                      </div>
+                      <button
+                        onClick={() => setConfig({ ...config, layout: { ...config.layout, isStickySidebar: !config.layout.isStickySidebar } })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.layout.isStickySidebar ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.layout.isStickySidebar ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setConfig({ ...config, layout: { ...config.layout, isStickySidebar: !config.layout.isStickySidebar } })}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.layout.isStickySidebar ? "bg-[#C41E3A]" : "bg-gray-200"
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.layout.isStickySidebar ? "translate-x-6" : "translate-x-1"
-                      }`} />
-                    </button>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">文章视图模式</p>
-                      <p className="text-sm text-gray-500">卡片视图或列表视图</p>
+                  <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-gray-900">文章视图模式</p>
+                        <p className="text-sm text-gray-500 mt-1">卡片视图或列表视图</p>
+                      </div>
+                      <select
+                        value={config.layout.articleViewMode}
+                        onChange={(e) => setConfig({ ...config, layout: { ...config.layout, articleViewMode: e.target.value as "card" | "list" } })}
+                        className="px-3 py-1.5 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      >
+                        <option value="card">卡片视图</option>
+                        <option value="list">列表视图</option>
+                      </select>
                     </div>
-                    <select
-                      value={config.layout.articleViewMode}
-                      onChange={(e) => setConfig({ ...config, layout: { ...config.layout, articleViewMode: e.target.value as "card" | "list" } })}
-                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
-                    >
-                      <option value="card">卡片视图</option>
-                      <option value="list">列表视图</option>
-                    </select>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">启用动画</p>
-                      <p className="text-sm text-gray-500">页面过渡和悬停动画</p>
+                  <div className="p-5 bg-gray-50 rounded-lg border border-gray-200 md:col-span-2">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-gray-900">启用动画</p>
+                        <p className="text-sm text-gray-500 mt-1">页面过渡和悬停动画</p>
+                      </div>
+                      <button
+                        onClick={() => setConfig({ ...config, layout: { ...config.layout, enableAnimations: !config.layout.enableAnimations } })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          config.layout.enableAnimations ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          config.layout.enableAnimations ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setConfig({ ...config, layout: { ...config.layout, enableAnimations: !config.layout.enableAnimations } })}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.layout.enableAnimations ? "bg-[#C41E3A]" : "bg-gray-200"
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.layout.enableAnimations ? "translate-x-6" : "translate-x-1"
-                      }`} />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -655,12 +754,16 @@ export default function ThemeSettingsPage() {
 
           {/* 侧边组件 */}
           {activeTab === "widgets" && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <LayoutGrid className="w-5 h-5" />
-                侧边栏组件管理
-              </h2>
-              <p className="text-sm text-gray-600 mb-6">拖拽排序，勾选启用/禁用组件</p>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-8">
+              <div className="flex items-center gap-4 mb-8 pb-5 border-b border-gray-200">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-md shadow-green-500/30">
+                  <LayoutGrid className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">侧边栏组件管理</h2>
+                  <p className="text-sm text-gray-500 mt-1">拖拽排序，勾选启用/禁用组件</p>
+                </div>
+              </div>
 
               <DndContext
                 sensors={sensors}
@@ -692,12 +795,16 @@ export default function ThemeSettingsPage() {
           {/* 广告管理 */}
           {activeTab === "ads" && (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Megaphone className="w-5 h-5" />
-                  广告位管理
-                </h2>
-                <p className="text-sm text-gray-600 mb-6">配置 5 个广告位的展示</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-8">
+                <div className="flex items-center gap-4 mb-8 pb-5 border-b border-gray-200">
+                  <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl shadow-md shadow-yellow-500/30">
+                    <Megaphone className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">广告位管理</h2>
+                    <p className="text-sm text-gray-500 mt-1">配置 5 个广告位的展示</p>
+                  </div>
+                </div>
 
                 {Object.entries(config.adSlots).map(([key, slot]) => (
                   <div key={key} className="p-4 border border-gray-200 rounded-lg mb-4">
@@ -790,41 +897,47 @@ export default function ThemeSettingsPage() {
           {/* SEO 设置 */}
           {activeTab === "seo" && (
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  SEO 配置
-                </h2>
-                <p className="text-sm text-gray-600 mb-6">优化搜索引擎收录</p>
-
-                {Object.entries(config.seo).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {key === "enableBaiduPush" && "百度推送"}
-                        {key === "enableGoogleIndex" && "Google 索引"}
-                        {key === "autoSitemap" && "自动生成站点地图"}
-                        {key === "structuredData" && "结构化数据"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setConfig({
-                        ...config,
-                        seo: {
-                          ...config.seo,
-                          [key]: !value,
-                        },
-                      })}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        value ? "bg-[#C41E3A]" : "bg-gray-200"
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        value ? "translate-x-6" : "translate-x-1"
-                      }`} />
-                    </button>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-8">
+                <div className="flex items-center gap-4 mb-8 pb-5 border-b border-gray-200">
+                  <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-md shadow-indigo-500/30">
+                    <Zap className="w-7 h-7 text-white" />
                   </div>
-                ))}
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">SEO 配置</h2>
+                    <p className="text-sm text-gray-500 mt-1">优化搜索引擎收录</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {Object.entries(config.seo).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:border-[#C41E3A] transition-all">
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {key === "enableBaiduPush" && "🔍 百度推送"}
+                          {key === "enableGoogleIndex" && "🌐 Google 索引"}
+                          {key === "autoSitemap" && "🗺️ 自动生成站点地图"}
+                          {key === "structuredData" && "📊 结构化数据"}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setConfig({
+                          ...config,
+                          seo: {
+                            ...config.seo,
+                            [key]: !value,
+                          },
+                        })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          value ? "bg-gradient-to-r from-[#C41E3A] to-red-600" : "bg-gray-200"
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          value ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -864,7 +977,11 @@ function SortableWidgetItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-[#C41E3A] transition-colors bg-white"
+      className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
+        isDragging 
+          ? "border-blue-400 shadow-md bg-blue-50" 
+          : "border-gray-200 bg-white hover:border-gray-300"
+      }`}
     >
       {/* 拖拽手柄 */}
       <div
@@ -880,11 +997,13 @@ function SortableWidgetItem({
         type="checkbox"
         checked={widgetConfig?.enabled ?? false}
         onChange={() => onToggle(widgetId)}
-        className="w-5 h-5 text-[#C41E3A] border-gray-300 rounded focus:ring-[#C41E3A]"
+        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
       />
 
       {/* 标题 */}
-      <span className="text-sm font-medium text-gray-900 flex-1">{widgetConfig.title}</span>
+      <span className={`text-sm font-medium flex-1 ${
+        widgetConfig?.enabled ? "text-gray-900" : "text-gray-400 line-through"
+      }`}>{widgetConfig.title}</span>
 
       {/* 状态图标 */}
       <div className="flex items-center gap-2">

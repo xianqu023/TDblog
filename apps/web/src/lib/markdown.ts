@@ -7,7 +7,7 @@ marked.setOptions({
 });
 
 /**
- * 处理图片：添加包装容器、响应式类名、懒加载
+ * 处理图片：添加包装容器、响应式类名、禁用懒加载
  */
 function processImagesInHtml(html: string): string {
   // 单独处理 <img> 标签，添加包装容器实现居中
@@ -28,9 +28,9 @@ function processImagesInHtml(html: string): string {
     } else {
       newImg = newImg.replace(/class=["'][^"']*["']/i, `class="${combinedClasses}"`);
     }
-    if (!hasWidth && !hasHeight) {
-      newImg = newImg.replace(/>$/, ' loading="lazy">');
-    }
+    
+    // 禁用懒加载，使用异步解码
+    newImg = newImg.replace(/>$/, ' loading="eager" decoding="async" fetchpriority="high">');
 
     // 用 figure 包裹实现居中和图注支持
     return `<figure class="article-image-wrapper">${newImg}</figure>`;

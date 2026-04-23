@@ -19,6 +19,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
+        console.log('[Auth] 尝试登录:', email);
+
         const user = await prisma.user.findUnique({
           where: { email },
           include: {
@@ -40,13 +42,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (!user || user.status !== "ACTIVE") {
+          console.log('[Auth] 用户不存在或未激活');
           return null;
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
         if (!isPasswordValid) {
+          console.log('[Auth] 密码错误');
           return null;
         }
+
+        console.log('[Auth] 登录成功:', user.username);
 
         // 更新最后登录时间
         await prisma.user.update({
@@ -94,4 +100,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/login",
   },
+  trustHost: true,
 });

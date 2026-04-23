@@ -3,6 +3,7 @@ import "./globals.css";
 import { CDNHead } from "@/components/shared/CDNHead";
 import { getSiteSettings } from "@/lib/site-settings";
 import ThemeInitializer from "@/components/ThemeInitializer";
+import RegisterThemes from "@/themes/RegisterThemes";
 
 // Use system fonts only - no external font loading to avoid network issues during build
 const fontVariables = {
@@ -53,6 +54,7 @@ export default async function RootLayout({
         )}
       </head>
       <body className="min-h-full flex flex-col" style={{ backgroundColor: "var(--theme-bg, #ffffff)", color: "var(--theme-text, #171717)" }}>
+        <RegisterThemes />
         <ThemeInitializer />
         {children}
       </body>
