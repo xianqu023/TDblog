@@ -38,8 +38,8 @@ pnpm exec prisma generate
 
 # 4. 构建 Next.js 应用
 echo "🔨 构建 Next.js 应用..."
-cd "$PROJECT_ROOT"
-pnpm build
+cd "$PROJECT_ROOT/apps/web"
+pnpm run build -- --skip-prerender
 
 # 5. 复制生产环境必需的文件
 echo "📋 复制生产环境文件..."

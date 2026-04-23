@@ -1,18 +1,9 @@
-import { Html, Head, Main, NextScript } from "next/document";
-import { getSiteSettings } from "@/lib/site-settings";
+import { Html, Head, Main, NextScript } from 'next/document';
 
-export default async function Document() {
-  const siteSettings = await getSiteSettings();
-  
+export default function Document() {
   return (
-    <Html lang="zh">
-      <Head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.__INITIAL_SITE_SETTINGS__ = ${JSON.stringify(siteSettings)};`
-          }}
-        />
-      </Head>
+    <Html>
+      <Head />
       <body>
         <Main />
         <NextScript />
@@ -20,3 +11,4 @@ export default async function Document() {
     </Html>
   );
 }
+
