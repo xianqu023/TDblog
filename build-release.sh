@@ -176,6 +176,12 @@ create_release_structure() {
         log_info "复制上传文件..."
     fi
     
+    # 复制 src 目录（必需，包含 i18n 配置等）
+    if [ -d "$PROJECT_ROOT/apps/web/src" ]; then
+        cp -r "$PROJECT_ROOT/apps/web/src" "$RELEASE_DIR/apps/web/"
+        log_info "复制源代码目录..."
+    fi
+    
     cp "$PROJECT_ROOT/apps/web/package.json" "$RELEASE_DIR/apps/web/"
     cp "$PROJECT_ROOT/apps/web/next.config.ts" "$RELEASE_DIR/apps/web/"
     
