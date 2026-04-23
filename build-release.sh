@@ -184,6 +184,7 @@ create_release_structure() {
     
     cp "$PROJECT_ROOT/apps/web/package.json" "$RELEASE_DIR/apps/web/"
     cp "$PROJECT_ROOT/apps/web/next.config.ts" "$RELEASE_DIR/apps/web/"
+    cp "$PROJECT_ROOT/apps/web/tsconfig.json" "$RELEASE_DIR/apps/web/"
     
     # 复制 packages/database 文件
     cp "$PROJECT_ROOT/packages/database/package.json" "$RELEASE_DIR/packages/database/"
@@ -192,6 +193,11 @@ create_release_structure() {
     if [ -f "$PROJECT_ROOT/packages/database/prisma/blog.db" ]; then
         cp "$PROJECT_ROOT/packages/database/prisma/blog.db" "$RELEASE_DIR/packages/database/prisma/"
         log_info "复制数据库文件..."
+    fi
+    # 复制 src 目录（必需，包含 Prisma Client 封装）
+    if [ -d "$PROJECT_ROOT/packages/database/src" ]; then
+        cp -r "$PROJECT_ROOT/packages/database/src" "$RELEASE_DIR/packages/database/"
+        log_info "复制数据库源代码..."
     fi
     
     # 复制脚本
