@@ -66,6 +66,12 @@ check_pm2() {
 start_service() {
     log_info "启动博客平台..."
     
+    # 加载环境变量
+    if [ -f ".env" ]; then
+        log_info "加载环境变量..."
+        export $(cat .env | grep -v "^#" | xargs)
+    fi
+    
     # 检查是否已经运行
     if pm2 status blog-platform | grep -q "online"; then
         log_info "服务已经在运行"
@@ -84,6 +90,13 @@ start_service() {
 # 重启服务
 restart_service() {
     log_info "重启博客平台..."
+    
+    # 加载环境变量
+    if [ -f ".env" ]; then
+        log_info "加载环境变量..."
+        export $(cat .env | grep -v "^#" | xargs)
+    fi
+    
     pm2 restart blog-platform
     log_success "服务已重启"
     show_status

@@ -95,6 +95,13 @@ check_pm2() {
 # 安装依赖
 install_dependencies() {
     log_info "安装依赖..."
+    
+    # 加载环境变量
+    if [ -f ".env" ]; then
+        log_info "加载环境变量..."
+        export $(cat .env | grep -v "^#" | xargs)
+    fi
+    
     pnpm install --production=false
     
     # 生成 Prisma 客户端
@@ -137,6 +144,12 @@ init_database() {
 # 启动服务
 start_service() {
     log_info "启动服务..."
+    
+    # 加载环境变量
+    if [ -f ".env" ]; then
+        log_info "加载环境变量..."
+        export $(cat .env | grep -v "^#" | xargs)
+    fi
     
     # 停止旧的进程
     pm2 stop blog-platform 2>/dev/null || true
