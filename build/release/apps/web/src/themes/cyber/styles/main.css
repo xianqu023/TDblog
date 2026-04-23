@@ -1,0 +1,390 @@
+/**
+ * Cyber Theme - Main Stylesheet
+ * 现代科技风格主题样式
+ */
+
+/* ==================== 基础样式 ==================== */
+[data-theme="cyber"] {
+  /* 字体 */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* 发光效果 */
+  --glow-primary: 0 0 20px rgba(14, 165, 233, 0.3);
+  --glow-secondary: 0 0 20px rgba(139, 92, 246, 0.3);
+  --glow-accent: 0 0 20px rgba(6, 182, 212, 0.3);
+  
+  /* 过渡 */
+  --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease;
+}
+
+/* ==================== 全局样式 ==================== */
+[data-theme="cyber"] body {
+  font-family: var(--font-family-base);
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  line-height: 1.6;
+  background-image: 
+    linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+[data-theme="cyber"] h1,
+[data-theme="cyber"] h2,
+[data-theme="cyber"] h3,
+[data-theme="cyber"] h4,
+[data-theme="cyber"] h5,
+[data-theme="cyber"] h6 {
+  font-weight: 700;
+  color: var(--theme-primary-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme="cyber"] a {
+  color: var(--theme-primary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+[data-theme="cyber"] a:hover {
+  color: var(--theme-primary-light);
+  text-shadow: var(--glow-primary);
+}
+
+/* ==================== 导航栏 ==================== */
+[data-theme="cyber"] .navbar {
+  background: var(--theme-nav-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--theme-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="cyber"] .navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--theme-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: var(--glow-primary);
+}
+
+/* ==================== 卡片样式 ==================== */
+[data-theme="cyber"] .card {
+  background: var(--theme-bg-card);
+  border-radius: var(--theme-radius-card, 1rem);
+  box-shadow: var(--theme-card-shadow);
+  border: 1px solid var(--theme-border);
+  transition: var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="cyber"] .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary), var(--theme-accent));
+  opacity: 0;
+  transition: var(--transition-base);
+}
+
+[data-theme="cyber"] .card:hover::before {
+  opacity: 1;
+}
+
+[data-theme="cyber"] .card:hover {
+  box-shadow: var(--theme-card-shadow-hover);
+  transform: translateY(-4px);
+  border-color: var(--theme-primary);
+}
+
+/* ==================== 按钮样式 ==================== */
+[data-theme="cyber"] .btn {
+  border-radius: var(--theme-radius-button, 0.75rem);
+  font-weight: 600;
+  transition: var(--transition-fast);
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="cyber"] .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+[data-theme="cyber"] .btn:hover::before {
+  left: 100%;
+}
+
+[data-theme="cyber"] .btn-primary {
+  background: var(--theme-primary);
+  color: white;
+  box-shadow: var(--glow-primary);
+}
+
+[data-theme="cyber"] .btn-primary:hover {
+  background: var(--theme-primary-dark);
+  box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+}
+
+[data-theme="cyber"] .btn-secondary {
+  background: var(--theme-secondary);
+  color: white;
+  box-shadow: var(--glow-secondary);
+}
+
+[data-theme="cyber"] .btn-accent {
+  background: var(--theme-accent);
+  color: white;
+  box-shadow: var(--glow-accent);
+}
+
+/* ==================== 文章卡片 ==================== */
+[data-theme="cyber"] .article-card {
+  background: var(--theme-bg-card);
+  border-radius: var(--theme-radius-card, 1rem);
+  overflow: hidden;
+  box-shadow: var(--theme-card-shadow);
+  transition: var(--transition-base);
+  border: 1px solid var(--theme-border);
+}
+
+[data-theme="cyber"] .article-card:hover {
+  box-shadow: var(--theme-card-shadow-hover);
+  transform: translateY(-4px);
+  border-color: var(--theme-primary);
+}
+
+[data-theme="cyber"] .article-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--theme-text);
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme="cyber"] .article-card-excerpt {
+  color: var(--theme-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+[data-theme="cyber"] .article-card-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+[data-theme="cyber"] .tag {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--theme-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+/* ==================== 文章详情 ==================== */
+[data-theme="cyber"] .article-content {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+
+[data-theme="cyber"] .article-content p {
+  margin-bottom: 1.5rem;
+}
+
+[data-theme="cyber"] .article-content img {
+  border-radius: var(--theme-radius-card, 1rem);
+  box-shadow: var(--theme-card-shadow);
+  border: 1px solid var(--theme-border);
+  margin: 2rem auto;
+}
+
+[data-theme="cyber"] .article-content blockquote {
+  border-left: 4px solid var(--theme-accent);
+  background: var(--theme-bg-alt);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border-radius: 0 var(--theme-radius-card, 1rem) var(--theme-radius-card, 1rem) 0;
+  font-style: italic;
+  color: var(--theme-text-muted);
+  box-shadow: var(--theme-card-shadow);
+}
+
+[data-theme="cyber"] .article-content code {
+  font-family: var(--font-family-mono);
+  font-size: 0.875em;
+  background: var(--theme-bg-alt);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  color: var(--theme-accent);
+  border: 1px solid var(--theme-border);
+}
+
+[data-theme="cyber"] .article-content pre {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-radius-card, 1rem);
+  padding: 1.5rem;
+  overflow-x: auto;
+  box-shadow: var(--theme-card-shadow);
+}
+
+[data-theme="cyber"] .article-content pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--theme-text);
+  border: none;
+}
+
+/* ==================== 代码块高亮 ==================== */
+[data-theme="cyber"] .token.comment,
+[data-theme="cyber"] .token.prolog,
+[data-theme="cyber"] .token.doctype,
+[data-theme="cyber"] .token.cdata {
+  color: #6272a4;
+}
+
+[data-theme="cyber"] .token.punctuation {
+  color: #f8f8f2;
+}
+
+[data-theme="cyber"] .token.property,
+[data-theme="cyber"] .token.tag,
+[data-theme="cyber"] .token.constant,
+[data-theme="cyber"] .token.symbol,
+[data-theme="cyber"] .token.deleted {
+  color: #ff79c6;
+}
+
+[data-theme="cyber"] .token.boolean,
+[data-theme="cyber"] .token.number {
+  color: #bd93f9;
+}
+
+[data-theme="cyber"] .token.selector,
+[data-theme="cyber"] .token.attr-name,
+[data-theme="cyber"] .token.string,
+[data-theme="cyber"] .token.char,
+[data-theme="cyber"] .token.builtin,
+[data-theme="cyber"] .token.inserted {
+  color: #50fa7b;
+}
+
+/* ==================== 侧边栏 ==================== */
+[data-theme="cyber"] .sidebar-widget {
+  background: var(--theme-bg-card);
+  border-radius: var(--theme-radius-card, 1rem);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--theme-card-shadow);
+}
+
+[data-theme="cyber"] .sidebar-widget-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--theme-text);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--theme-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ==================== 页脚 ==================== */
+[data-theme="cyber"] .footer {
+  background: var(--theme-bg);
+  color: var(--theme-text-muted);
+  border-top: 1px solid var(--theme-border);
+}
+
+[data-theme="cyber"] .footer a {
+  color: var(--theme-primary);
+}
+
+[data-theme="cyber"] .footer a:hover {
+  color: var(--theme-primary-light);
+  text-shadow: var(--glow-primary);
+}
+
+/* ==================== 装饰元素 ==================== */
+[data-theme="cyber"] .cyber-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="cyber"] .neon-divider {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--theme-primary),
+    var(--theme-secondary),
+    var(--theme-accent),
+    transparent
+  );
+  margin: 2rem 0;
+  box-shadow: var(--glow-primary);
+}
+
+/* ==================== 动画效果 ==================== */
+@keyframes cyber-pulse {
+  0%, 100% {
+    box-shadow: var(--glow-primary);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+  }
+}
+
+[data-theme="cyber"] .pulse-animation {
+  animation: cyber-pulse 2s ease-in-out infinite;
+}
+
+/* ==================== 响应式设计 ==================== */
+@media (max-width: 768px) {
+  [data-theme="cyber"] {
+    --theme-radius-card: 0.75rem;
+    --theme-radius-button: 0.5rem;
+  }
+  
+  [data-theme="cyber"] .article-card-title {
+    font-size: 1.125rem;
+  }
+  
+  [data-theme="cyber"] .navbar-brand {
+    font-size: 1.25rem;
+  }
+}

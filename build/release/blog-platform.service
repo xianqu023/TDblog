@@ -1,0 +1,30 @@
+[Unit]
+Description=Blog Platform
+Documentation=https://github.com/xianqu023/TDblog
+After=network.target
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/your/blog
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+Environment="DATABASE_URL=file:./packages/database/prisma/blog.db"
+ExecStart=/usr/bin/pm2 start ecosystem.config.js
+ExecReload=/usr/bin/pm2 restart blog-platform
+ExecStop=/usr/bin/pm2 stop blog-platform
+Restart=always
+RestartSec=10
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=blog-platform
+
+# 安全设置
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

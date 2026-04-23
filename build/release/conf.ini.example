@@ -1,0 +1,43 @@
+# =============================================================================
+# 博客平台 - 配置文件示例
+# =============================================================================
+# 复制此文件为 conf.ini 并修改相应的配置
+# cp conf.ini.example conf.ini
+# =============================================================================
+
+[server]
+# 服务器配置
+port = 3000
+host = 0.0.0.0
+node_env = production
+instances = 1
+max_memory = 1G
+
+[database]
+# 数据库配置
+# SQLite 文件路径
+url = file:./packages/database/prisma/blog.db
+
+[auth]
+# 认证配置
+# 生成密钥：openssl rand -base64 32
+secret = your-secret-key-here
+# 网站 URL
+url = http://localhost:3000
+
+[site]
+# 网站配置
+name = 我的博客
+url = http://localhost:3000
+
+[storage]
+# 存储配置
+driver = local
+local_path = ./uploads
+local_url = /uploads
+
+[ai]
+# AI 配置（可选）
+# api_key = your-openai-api-key
+# base_url = https://api.openai.com/v1
+# model = gpt-3.5-turbo
