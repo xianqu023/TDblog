@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
     if (!theme) {
       theme = await prisma.theme.create({
         data: {
+          themeId: 'chinese-two-column',
           slug: 'chinese-two-column',
           name: '中式双栏主题',
           description: '中式国风双栏博客主题，支持 13 个侧边栏组件和 5 个广告位',

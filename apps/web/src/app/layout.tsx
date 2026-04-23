@@ -20,10 +20,24 @@ export async function generateMetadata(): Promise<Metadata> {
   
   // 如果设置了 faviconUrl，添加到 metadata
   if (settings.faviconUrl) {
+    // 确保 favicon 路径正确（添加时间戳避免缓存）
+    const faviconPath = settings.faviconUrl.startsWith('/uploads') 
+      ? settings.faviconUrl 
+      : `/uploads${settings.faviconUrl}`;
+    
     metadata.icons = {
-      icon: settings.faviconUrl,
-      shortcut: settings.faviconUrl,
-      apple: settings.faviconUrl,
+      icon: {
+        url: faviconPath,
+        type: 'image/png',
+      },
+      shortcut: {
+        url: faviconPath,
+        type: 'image/png',
+      },
+      apple: {
+        url: faviconPath,
+        type: 'image/png',
+      },
     };
   }
   
@@ -47,9 +61,9 @@ export default async function RootLayout({
         {/* 动态添加 favicon 链接 */}
         {settings.faviconUrl && (
           <>
-            <link rel="icon" href={settings.faviconUrl} />
-            <link rel="shortcut icon" href={settings.faviconUrl} />
-            <link rel="apple-touch-icon" href={settings.faviconUrl} />
+            <link rel="icon" href={settings.faviconUrl} key="favicon" />
+            <link rel="shortcut icon" href={settings.faviconUrl} key="shortcut-icon" />
+            <link rel="apple-touch-icon" href={settings.faviconUrl} key="apple-icon" />
           </>
         )}
       </head>

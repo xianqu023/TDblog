@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
         ...theme,
         isActive: dbTheme?.isActive || false,
         isDefault: theme.isDefault || false,
-        activatedAt: dbTheme?.activatedAt,
       };
     });
 
