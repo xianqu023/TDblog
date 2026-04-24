@@ -1,69 +1,51 @@
-const fs = require('fs');
-const path = require('path');
-
 /**
- * 解析 INI 配置文件
+ * PM2 配置文件
+ * 用于生产环境进程管理
  */
-function parseIni(filePath) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const config = {};
-  let currentSection = null;
-
-  for (const line of content.split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) continue;
-    const sectionMatch = trimmed.match(/^\[(.+)\]$/);
-    if (sectionMatch) {
-      currentSection = sectionMatch[1];
-      config[currentSection] = {};
-      continue;
-    }
-    if (currentSection && trimmed.includes('=')) {
-      const [key, ...valueParts] = trimmed.split('=');
-      config[currentSection][key.trim()] = valueParts.join('=').trim();
-    }
-  }
-  return config;
-}
-
-// 加载配置
-const configPath = path.resolve(__dirname, 'conf.ini');
-const defaultConfig = {
-  app: {
-    port: '3000',
-    maxWorkers: '1'
-  }
-};
-
-let appConfig = defaultConfig;
-
-if (fs.existsSync(configPath)) {
-  try {
-    const parsed = parseIni(configPath);
-    if (parsed.app) {
-      appConfig = { ...defaultConfig, ...parsed };
-    }
-  } catch (error) {
-    console.warn('Failed to parse conf.ini, using defaults:', error.message);
-  }
-}
 
 module.exports = {
-  apps: [{
-    name: 'blog-platform',
-    script: './apps/web/server.js',
-    instances: appConfig.app.maxWorkers || 1,
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: 'production',
-      PORT: appConfig.app.port || '3000'
+  apps: [
+    {
+      name: 'blog-platform',
+      // 使用 standalone 服务器
+      script: './apps/web/.next/standalone/apps/web/server.js',
+      
+      // 实例数量（集群模式）
+      instances: 1,
+      exec_mode: 'fork', // 不使用 cluster，SQLite 不支持多进程
+      
+      // 环境变量
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000,
+        STANDALONE: 'true',
+      },
+      
+      // 错误处理
+      error_file: './logs/pm2-error.log',
+      out_file: './logs/pm2-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      merge_logs: true,
+      
+      // 自动重启
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      
+      // 重启策略
+      restart_delay: 4000,
+      max_restarts: 10,
+      min_uptime: '10s',
+      
+      // 网络配置
+      listen_timeout: 3000,
+      kill_timeout: 5000,
+      
+      // 健康检查
+      status: {
+        port: 9615,
+        path: '/health',
+      },
     },
-    error_file: './logs/pm2-error.log',
-    out_file: './logs/pm2-out.log',
-    log_file: './logs/pm2-combined.log',
-    time: true,
-    autorestart: true,
-    max_memory_restart: '1G',
-    watch: false
-  }]
+  ],
 };

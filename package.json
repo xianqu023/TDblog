@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "bash -c 'if [ -d packages/database ]; then cd packages/database && npx prisma generate; fi' 2>/dev/null || true && turbo build",
+    "build:prod": "bash scripts/build-prod.sh",
+    "build:clean": "bash -c 'rm -rf .next apps/web/.next packages/database/.next node_modules/.cache .turbo'",
     "prebuild": "node -e 'process.exit(0)'",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
@@ -17,12 +19,18 @@
     "build:release:lite": "bash scripts/build.sh lite",
     "package:source": "bash scripts/package-source.sh",
     "package:source:lite": "bash scripts/package-source.sh --lite",
-    "deploy": "bash scripts/deploy.sh",
+    "deploy": "bash deploy.sh",
+    "deploy:full": "bash deploy.sh full",
+    "deploy:quick": "bash deploy.sh quick",
+    "deploy:menu": "bash deploy.sh",
     "init": "node scripts/config-loader.js",
+    "init:db": "bash deploy.sh init-db",
     "logs": "pm2 logs blog-platform",
     "status": "pm2 status blog-platform",
     "restart": "pm2 restart blog-platform",
-    "stop": "pm2 stop blog-platform"
+    "stop": "pm2 stop blog-platform",
+    "clean": "bash deploy.sh clean",
+    "env:setup": "cp .env.example .env && echo '环境变量已创建，请编辑 .env 文件'"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.4",

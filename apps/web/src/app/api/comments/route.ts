@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
 
   // 对于已登录用户，只保留该用户自己的评论和其他用户的非垃圾、非拒绝评论
   const filteredComments = userId 
-    ? comments.filter(comment => 
+    ? comments.filter((comment: any) => 
         comment.userId === userId || (comment.status !== "REJECTED" && comment.status !== "SPAM")
       )
     : comments;

@@ -172,22 +172,20 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <X className="h-5 w-5 text-gray-500" />
           </button>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col items-center">
             {settings.logoUrl ? (
               <img
                 src={settings.logoUrl}
                 alt={settings.siteName}
-                className="h-12 w-12 object-contain rounded-xl shadow-sm"
+                className="h-16 w-16 object-contain rounded-xl shadow-sm mb-3"
               />
             ) : (
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm" />
+              <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm mb-3" />
             )}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">{settings.siteName}</h2>
-              <p className="text-sm text-gray-500">
-                {mode === "login" ? "欢迎回来" : "创建新账户"}
-              </p>
-            </div>
+            <h2 className="text-xl font-bold text-gray-900 text-center">{settings.siteName}</h2>
+            <p className="text-sm text-gray-500 text-center mt-1">
+              {mode === "login" ? "欢迎回来" : "创建新账户"}
+            </p>
           </div>
         </div>
 
@@ -227,15 +225,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  邮箱
+                  用户名或邮箱
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
-                    type="email"
+                    type="text"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder="您的用户名或邮箱"
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     required
                   />
@@ -284,12 +282,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   "登录"
                 )}
               </button>
-
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-700 font-medium mb-1">测试账户:</p>
-                <p className="text-xs text-blue-600">邮箱: admin@example.com</p>
-                <p className="text-xs text-blue-600">密码: admin123</p>
-              </div>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">

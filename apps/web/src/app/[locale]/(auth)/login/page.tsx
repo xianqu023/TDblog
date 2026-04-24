@@ -79,16 +79,16 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
+          <Link href="/" className="flex flex-col items-center">
             {settings.logoUrl ? (
               <img
                 src={settings.logoUrl}
                 alt={siteName}
-                className="h-12 w-12 rounded-xl object-cover"
+                className="h-16 w-16 rounded-xl object-cover mb-3"
               />
             ) : (
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
+              <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-3">
+                <span className="text-white font-bold text-xl">
                   {siteName.substring(0, 2).toUpperCase()}
                 </span>
               </div>
@@ -111,15 +111,15 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                邮箱
+                用户名或邮箱
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="您的用户名或邮箱"
                   className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -158,12 +158,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-700 font-medium mb-1">测试账户:</p>
-            <p className="text-sm text-blue-600">邮箱: admin@example.com</p>
-            <p className="text-sm text-blue-600">密码: admin123</p>
-          </div>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">

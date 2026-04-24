@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     });
 
     // 添加文章计数
-    const tagsWithCount = tags.map((tag) => ({
+    const tagsWithCount = tags.map((tag: any) => ({
       id: tag.id,
       name: tag.name,
       slug: tag.slug,
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 
     // 按文章数量排序并限制数量
     const sortedTags = tagsWithCount
-      .sort((a, b) => b._count.articles - a._count.articles)
+      .sort((a: any, b: any) => b._count.articles - a._count.articles)
       .slice(0, limit);
 
     return NextResponse.json({ success: true, data: sortedTags });
