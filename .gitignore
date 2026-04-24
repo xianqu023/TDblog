@@ -41,3 +41,6 @@ uploads/
 deploy-package/
 deploy-package.tar.gz
 deploy-package.zip
+
+# Binary distributions
+dist-binary/
