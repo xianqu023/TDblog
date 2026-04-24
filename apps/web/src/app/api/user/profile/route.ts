@@ -45,7 +45,7 @@ export async function GET() {
     });
 
     const articleCount = articles.length;
-    const totalViews = articles.reduce((sum: number, article: any) => sum + (article.viewCount || 0), 0);
+    const totalViews = articles.reduce((sum, article) => sum + (article.viewCount || 0), 0);
 
     return NextResponse.json({
       success: true,

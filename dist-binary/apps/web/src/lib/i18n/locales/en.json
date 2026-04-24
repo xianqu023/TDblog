@@ -1,0 +1,303 @@
+{
+  "common": {
+    "home": "Home",
+    "articles": "Articles",
+    "tags": "Tags",
+    "categories": "Categories",
+    "shop": "Shop",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "more": "More",
+    "viewAll": "View All",
+    "back": "Back",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "confirm": "Confirm",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "nav": {
+    "home": "Home",
+    "articles": "Articles",
+    "tags": "Tags",
+    "shop": "Shop",
+    "orders": "Orders",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Admin Panel",
+    "userCenter": "User Center",
+    "settings": "Account Settings",
+    "logout": "Logout"
+  },
+  "home": {
+    "hero": {
+      "welcome": "Welcome to My Blog",
+      "subtitle": "Sharing technology, life, and thoughts",
+      "slide1Title": "Welcome to My Blog",
+      "slide1Subtitle": "Sharing technology, life, and thoughts",
+      "slide2Title": "Explore the Infinite Possibilities of Technology",
+      "slide2Subtitle": "From frontend to backend, from theory to practice",
+      "slide3Title": "Record Every Step of Growth",
+      "slide3Subtitle": "Document thoughts and reflections through words",
+      "learnMore": "Learn More",
+      "previousSlide": "Previous slide",
+      "nextSlide": "Next slide",
+      "slideIndicator": "Slide {current} of {total}"
+    },
+    "popularArticles": "Popular Articles",
+    "recentArticles": "Recent Articles",
+    "noArticles": "No articles yet",
+    "loadMore": "Load More Articles"
+  },
+  "sidebar": {
+    "blogger": {
+      "defaultName": "Blogger Name",
+      "defaultBio": "Love technology, love life",
+      "articles": "Articles",
+      "views": "Views",
+      "followers": "Followers"
+    },
+    "ad": {
+      "label": "Ad",
+      "defaultTitle": "Ad Title",
+      "defaultDescription": "This is an ad space. You can add or modify ad content from the admin panel",
+      "learnMore": "Learn More"
+    },
+    "popularArticles": "Popular Articles",
+    "noArticles": "No articles yet",
+    "tagCloud": {
+      "title": "Tag Cloud",
+      "articleCount": "articles",
+      "noTags": "No tags yet"
+    },
+    "countdown": {
+      "defaultTitle": "Countdown",
+      "defaultDescription": "Time until New Year",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "weather": {
+      "feelsLike": "Feels like",
+      "humidity": "Humidity",
+      "windSpeed": "Wind Speed",
+      "condition": {
+        "Clear": "Clear",
+        "Clouds": "Cloudy",
+        "Rain": "Rainy",
+        "Snow": "Snowy",
+        "Thunderstorm": "Thunderstorm",
+        "Drizzle": "Drizzle",
+        "default": "Unknown"
+      }
+    },
+    "searchBox": {
+      "placeholder": "Search..."
+    },
+    "darkMode": {
+      "title": "Dark Mode"
+    },
+    "fontSize": {
+      "title": "Font Size"
+    },
+    "miniCalendar": {
+      "title": "Calendar"
+    },
+    "statistics": {
+      "title": "Site Statistics",
+      "articles": "Articles",
+      "categories": "Categories",
+      "tags": "Tags",
+      "views": "Views"
+    },
+    "categoryNav": {
+      "title": "Categories",
+      "empty": "No categories"
+    },
+    "pageLinks": {
+      "title": "Pages"
+    },
+    "siteLinks": {
+      "title": "Site Links",
+      "empty": "No links"
+    },
+    "newArticles": {
+      "title": "Latest Articles",
+      "empty": "No articles"
+    },
+    "featuredPosts": {
+      "title": "Featured Posts",
+      "empty": "No featured posts"
+    },
+    "randomPosts": {
+      "title": "Random Posts",
+      "empty": "No articles"
+    },
+    "relatedArticles": {
+      "title": "Related Articles",
+      "empty": "No related articles"
+    },
+    "articleTOC": {
+      "title": "Table of Contents",
+      "empty": "No contents"
+    },
+    "recentComments": {
+      "title": "Recent Comments",
+      "empty": "No comments"
+    },
+    "guestbook": {
+      "title": "Guestbook",
+      "placeholder": "Write your message...",
+      "submit": "Submit",
+      "empty": "No messages"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "success": "Subscribed successfully!",
+      "error": "Subscription failed, please try again"
+    },
+    "socialFeed": {
+      "title": "Social Feed",
+      "empty": "No updates"
+    },
+    "socialFollow": {
+      "title": "Follow Us"
+    },
+    "rssFeed": {
+      "title": "RSS Feed",
+      "empty": "No feed content"
+    },
+    "gallery": {
+      "title": "Gallery",
+      "more": "{count} more images",
+      "empty": "No images"
+    },
+    "poll": {
+      "title": "Poll"
+    },
+    "quiz": {
+      "title": "Quiz"
+    },
+    "countdown": {
+      "defaultTitle": "Countdown",
+      "defaultDescription": "Time until New Year",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "qrCode": {
+      "title": "Scan to Visit",
+      "description": "Scan QR code with your phone to visit"
+    },
+    "promoProducts": {
+      "title": "Promotional Products",
+      "empty": "No promotional products"
+    },
+    "hotProducts": {
+      "title": "Hot Products",
+      "empty": "No data"
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "empty": "No orders"
+    },
+    "productShowcase": {
+      "title": "Products",
+      "empty": "No products"
+    },
+    "shoppingCart": {
+      "title": "Shopping Cart"
+    },
+    "downloadZone": {
+      "title": "Downloads",
+      "empty": "No downloads"
+    },
+    "coupons": {
+      "title": "Coupons",
+      "empty": "No coupons"
+    },
+    "ctaButtons": {
+      "title": "Quick Actions"
+    },
+    "ad": {
+      "label": "Ad",
+      "defaultTitle": "Ad Title",
+      "defaultDescription": "This is an ad space. You can add or modify ad content from the admin panel",
+      "learnMore": "Learn More"
+    }
+  },
+  "article": {
+    "articles": "Articles",
+    "readMore": "Read More",
+    "publishedAt": "Published at",
+    "updatedAt": "Updated at",
+    "views": "Views",
+    "tags": "Tags",
+    "share": "Share",
+    "relatedArticles": "Related Articles",
+    "premium": "Premium",
+    "free": "Free",
+    "price": "Price",
+    "buyNow": "Buy Now",
+    "locked": "Content Locked",
+    "unlockToRead": "Purchase to read full article",
+    "noArticles": "No articles yet",
+    "loadMore": "Load More Articles"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed",
+    "logoutSuccess": "Logged out successfully",
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create new account"
+  },
+  "userCenter": {
+    "title": "User Center",
+    "profile": "Profile",
+    "orders": "My Orders",
+    "downloads": "My Downloads",
+    "membership": "Membership Status",
+    "settings": "Account Settings",
+    "adminPanel": "Admin Panel",
+    "welcome": "Welcome",
+    "memberSince": "Member since",
+    "quickLinks": "Quick Links"
+  },
+  "footer": {
+    "copyright": "© 2026 My Blog. All rights reserved.",
+    "poweredBy": "Powered by Next.js",
+    "icp": "ICP License",
+    "quickLinks": "Quick Links",
+    "followUs": "Follow Us"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}",
+    "total": "Total {total} pages"
+  }
+}

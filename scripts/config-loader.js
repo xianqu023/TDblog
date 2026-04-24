@@ -117,6 +117,105 @@ function initializeDatabase(dbType, projectRoot) {
 }
 
 /**
+ * 加载多数据库配置
+ */
+function loadMultiDatabaseConfig(config) {
+  const multiDbConfig = {
+    connections: {},
+    defaultConnection: 'default',
+  };
+
+  // 默认数据库
+  const dbConfig = config.database || {};
+  const dbType = detectDatabaseType(dbConfig);
+  multiDbConfig.connections.default = {
+    url: dbConfig.url || 'file:./packages/database/prisma/blog.db',
+    authToken: dbConfig.auth_token,
+    provider: dbType,
+  };
+
+  // 写库
+  if (config.database_write) {
+    const writeConfig = config.database_write;
+    const writeType = detectDatabaseType(writeConfig);
+    multiDbConfig.connections.write = {
+      url: writeConfig.url,
+      authToken: writeConfig.auth_token,
+      provider: writeType,
+    };
+  }
+
+  // 读库
+  if (config.database_read) {
+    const readConfig = config.database_read;
+    const readType = detectDatabaseType(readConfig);
+    multiDbConfig.connections.read = {
+      url: readConfig.url,
+      authToken: readConfig.auth_token,
+      provider: readType,
+    };
+  }
+
+  // 分析库
+  if (config.database_analytics) {
+    const analyticsConfig = config.database_analytics;
+    const analyticsType = detectDatabaseType(analyticsConfig);
+    multiDbConfig.connections.analytics = {
+      url: analyticsConfig.url,
+      authToken: analyticsConfig.auth_token,
+      provider: analyticsType,
+    };
+  }
+
+  // 自定义连接
+  if (config.database_custom && config.database_custom.connections) {
+    try {
+      const customConnections = JSON.parse(config.database_custom.connections);
+      Object.assign(multiDbConfig.connections, customConnections);
+    } catch (error) {
+      console.log(`${colors.yellow}⚠️  解析自定义数据库连接失败：${error.message}${colors.reset}`);
+    }
+  }
+
+  // 默认连接
+  if (config.database_default && config.database_default.default_connection) {
+    multiDbConfig.defaultConnection = config.database_default.default_connection;
+  }
+
+  return multiDbConfig;
+}
+
+/**
+ * 将相对路径转换为绝对路径
+ */
+function toAbsolutePath(pathValue, projectRoot) {
+  if (!pathValue) return pathValue;
+  
+  // 如果已经是绝对路径或协议 URL，直接返回
+  if (path.isAbsolute(pathValue) || 
+      pathValue.startsWith('http://') || 
+      pathValue.startsWith('https://') ||
+      pathValue.startsWith('libsql://') ||
+      pathValue.startsWith('postgresql://') ||
+      pathValue.startsWith('postgres://') ||
+      pathValue.startsWith('mysql://')) {
+    return pathValue;
+  }
+  
+  // 处理 file: 前缀
+  const isFileProtocol = pathValue.startsWith('file:');
+  const cleanPath = isFileProtocol ? pathValue.substring(5) : pathValue;
+  
+  // 如果是相对路径，转换为绝对路径
+  if (!path.isAbsolute(cleanPath)) {
+    const absolutePath = path.resolve(projectRoot, cleanPath);
+    return isFileProtocol ? `file:${absolutePath}` : absolutePath;
+  }
+  
+  return pathValue;
+}
+
+/**
  * 加载配置并设置环境变量
  */
 function loadAndApplyConfig() {
@@ -151,8 +250,43 @@ function loadAndApplyConfig() {
   // 构建环境变量对象
   const envVars = {};
   
-  // 数据库配置
-  envVars.DATABASE_URL = dbConfig.url || (dbType === 'sqlite' ? 'file:./packages/database/prisma/blog.db' : '');
+  // 数据库配置 - 支持多数据库（使用绝对路径）
+  let dbUrl = dbConfig.url || (dbType === 'sqlite' ? 'file:./packages/database/prisma/blog.db' : '');
+  envVars.DATABASE_URL = toAbsolutePath(dbUrl, projectRoot);
+  envVars.DATABASE_PROVIDER = dbType;
+  
+  // 读写分离配置（使用绝对路径）
+  if (config.database_write) {
+    envVars.DATABASE_WRITE_URL = toAbsolutePath(config.database_write.url, projectRoot);
+    envVars.DATABASE_WRITE_PROVIDER = detectDatabaseType(config.database_write);
+    if (config.database_write.auth_token) {
+      envVars.DATABASE_WRITE_AUTH_TOKEN = config.database_write.auth_token;
+    }
+  }
+  
+  if (config.database_read) {
+    envVars.DATABASE_READ_URL = toAbsolutePath(config.database_read.url, projectRoot);
+    envVars.DATABASE_READ_PROVIDER = detectDatabaseType(config.database_read);
+    if (config.database_read.auth_token) {
+      envVars.DATABASE_READ_AUTH_TOKEN = config.database_read.auth_token;
+    }
+  }
+  
+  if (config.database_analytics) {
+    envVars.DATABASE_ANALYTICS_URL = toAbsolutePath(config.database_analytics.url, projectRoot);
+    envVars.DATABASE_ANALYTICS_PROVIDER = detectDatabaseType(config.database_analytics);
+    if (config.database_analytics.auth_token) {
+      envVars.DATABASE_ANALYTICS_AUTH_TOKEN = config.database_analytics.auth_token;
+    }
+  }
+  
+  if (config.database_custom && config.database_custom.connections) {
+    envVars.DATABASE_CUSTOM_CONNECTIONS = config.database_custom.connections;
+  }
+  
+  if (config.database_default && config.database_default.default_connection) {
+    envVars.DATABASE_DEFAULT_CONNECTION = config.database_default.default_connection;
+  }
   
   // 认证配置
   envVars.AUTH_SECRET = authConfig.secret || generateRandomString();
@@ -223,6 +357,15 @@ function loadAndApplyConfig() {
   // 显示加载的配置
   console.log(`${colors.green}✓${colors.reset} 已加载配置项：`);
   console.log(`  ${colors.cyan}数据库:${colors.reset} ${dbType}`);
+  
+  if (config.database_write || config.database_read) {
+    console.log(`  ${colors.cyan}读写分离:${colors.reset} ${config.database_write ? '✓' : '✗'} 写库，${config.database_read ? '✓' : '✗'} 读库`);
+  }
+  
+  if (config.database_custom) {
+    console.log(`  ${colors.cyan}自定义连接:${colors.reset} 已配置`);
+  }
+  
   console.log(`  ${colors.cyan}服务器端口:${colors.reset} ${envVars.PORT}`);
   console.log(`  ${colors.cyan}网站名称:${colors.reset} ${envVars.NEXT_PUBLIC_SITE_NAME}`);
   console.log(`  ${colors.cyan}存储驱动:${colors.reset} ${envVars.STORAGE_DRIVER}`);
@@ -231,7 +374,10 @@ function loadAndApplyConfig() {
     console.log(`  ${colors.cyan}AI 服务:${colors.reset} 已配置`);
   }
   
-  return { config, envVars, dbType };
+  // 加载多数据库配置
+  const multiDbConfig = loadMultiDatabaseConfig(config);
+  
+  return { config, envVars, dbType, multiDbConfig };
 }
 
 /**

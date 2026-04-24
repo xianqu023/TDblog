@@ -35,7 +35,7 @@ export async function GET() {
     // 按年月分组
     const archivesByYearMonth: Record<string, any[]> = {};
 
-    articles.forEach((article: any) => {
+    articles.forEach((article) => {
       if (!article.publishedAt) return;
 
       const date = new Date(article.publishedAt);

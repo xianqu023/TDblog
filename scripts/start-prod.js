@@ -122,11 +122,20 @@ function startApp(config) {
   console.log(`  ${colors.green}✓${colors.reset} 环境：${process.env.NODE_ENV || 'production'}`);
   
   const webDir = path.join(projectRoot, 'apps', 'web');
+  const logDir = path.join(projectRoot, 'logs');
+  const logFile = path.join(logDir, 'combined.log');
   
-  // 启动 Next.js 服务器
+  // 确保日志目录存在
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  
+  // 清空旧日志
+  fs.writeFileSync(logFile, '');
+  
+  // 启动 Next.js 服务器，输出到日志文件和控制台
   const server = spawn('pnpm', ['start'], {
     cwd: webDir,
-    stdio: 'inherit',
     env: {
       ...process.env,
       PORT: port,
@@ -134,14 +143,37 @@ function startApp(config) {
     }
   });
   
+  // 将输出写入日志文件
+  if (server.stdout) {
+    server.stdout.on('data', (data) => {
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      fs.appendFileSync(logFile, `${timestamp} ${data.toString()}\n`);
+      process.stdout.write(data);
+    });
+  }
+  
+  if (server.stderr) {
+    server.stderr.on('data', (data) => {
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      fs.appendFileSync(logFile, `${timestamp} ${data.toString()}\n`);
+      process.stderr.write(data);
+    });
+  }
+  
   server.on('error', (error) => {
-    console.error(`${colors.red}❌ 服务器启动失败:${colors.reset} ${error.message}`);
+    const errorMsg = `${colors.red}❌ 服务器启动失败:${colors.reset} ${error.message}`;
+    console.error(errorMsg);
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    fs.appendFileSync(logFile, `${timestamp} ERROR: ${error.message}\n`);
     process.exit(1);
   });
   
   server.on('exit', (code) => {
     if (code !== 0) {
-      console.error(`${colors.red}❌ 服务器异常退出:${colors.reset} ${code}`);
+      const exitMsg = `${colors.red}❌ 服务器异常退出:${colors.reset} ${code}`;
+      console.error(exitMsg);
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      fs.appendFileSync(logFile, `${timestamp} EXIT: ${code}\n`);
       process.exit(code);
     }
   });

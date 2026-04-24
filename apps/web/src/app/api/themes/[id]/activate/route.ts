@@ -10,7 +10,7 @@ export async function POST(
     const { id } = await params;
     
     // 开启事务
-    await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async (tx) => {
       // 1. 将所有主题设为非激活
       await tx.theme.updateMany({
         data: { isActive: false },

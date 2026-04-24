@@ -1,0 +1,140 @@
+# =============================================================================
+# Blog Platform - 多数据库配置示例
+# =============================================================================
+
+# =============================================================================
+# 数据库配置 - 单数据库模式
+# =============================================================================
+[database]
+# 数据库类型：sqlite, mysql, postgresql
+provider = sqlite
+
+# 数据库连接 URL
+# SQLite: file:./packages/database/prisma/blog.db
+# MySQL: mysql://user:password@localhost:3306/blog
+# PostgreSQL: postgresql://user:password@localhost:5432/blog
+# Turso (libsql): libsql://your-turso-url
+url = file:./packages/database/prisma/blog.db
+
+# 认证 Token（远程数据库需要）
+# auth_token = your-auth-token
+
+# =============================================================================
+# 数据库配置 - 读写分离模式
+# =============================================================================
+[database_write]
+# 写库配置（主库）
+provider = sqlite
+url = file:./packages/database/prisma/blog_write.db
+# auth_token = write-db-token
+
+[database_read]
+# 读库配置（从库，可以有多个）
+provider = sqlite
+url = file:./packages/database/prisma/blog_read.db
+# auth_token = read-db-token
+
+# =============================================================================
+# 数据库配置 - 分析数据库（可选）
+# =============================================================================
+[database_analytics]
+# 分析数据库，用于存储统计数据和复杂查询
+provider = libsql
+url = libsql://your-analytics-db.turso.io
+auth_token = your-analytics-db-token
+
+# =============================================================================
+# 数据库配置 - 自定义连接（JSON 格式）
+# =============================================================================
+[database_custom]
+# 自定义数据库连接，使用 JSON 格式
+# 示例：缓存数据库和会话数据库
+connections = {
+  "cache": {
+    "url": "file:./packages/database/prisma/cache.db",
+    "log": ["error"]
+  },
+  "session": {
+    "url": "file:./packages/database/prisma/session.db",
+    "log": ["error", "warn"]
+  },
+  "tenant_1": {
+    "url": "file:./packages/database/prisma/tenant1.db"
+  },
+  "tenant_2": {
+    "url": "file:./packages/database/prisma/tenant2.db"
+  }
+}
+
+# =============================================================================
+# 默认连接配置
+# =============================================================================
+[database_default]
+# 指定默认使用的连接名称
+# 可选值：default, read, write, analytics, 或 custom 中定义的名称
+default_connection = default
+
+# =============================================================================
+# 服务器配置
+# =============================================================================
+[server]
+port = 3000
+host = 0.0.0.0
+node_env = production
+
+# =============================================================================
+# 认证配置
+# =============================================================================
+[auth]
+secret = your-secret-key-here
+url = http://localhost:3000
+
+# =============================================================================
+# 网站配置
+# =============================================================================
+[site]
+name = My Blog
+url = http://localhost:3000
+
+# =============================================================================
+# 存储配置
+# =============================================================================
+[storage]
+driver = local
+local_path = ./uploads
+local_url = /uploads
+serve_static = true
+
+# =============================================================================
+# AI 配置
+# =============================================================================
+[ai]
+api_key = your-openai-api-key
+base_url = https://api.openai.com/v1
+model = gpt-4
+
+# =============================================================================
+# 使用说明
+# =============================================================================
+# 
+# 1. 单数据库模式：
+#    只配置 [database] 部分，使用 url 指定数据库
+# 
+# 2. 读写分离模式：
+#    配置 [database_write] 和 [database_read]
+#    代码中使用：
+#    - getDatabase('write') 获取写库
+#    - getDatabase('read') 获取读库
+# 
+# 3. 多数据库模式：
+#    配置 [database_custom] 使用 JSON 定义多个连接
+#    代码中使用：
+#    - getDatabase('cache') 获取缓存数据库
+#    - getDatabase('session') 获取会话数据库
+#    - getDatabase('tenant_1') 获取租户 1 数据库
+# 
+# 4. 加载配置：
+#    node scripts/config-loader.js
+# 
+# 5. 启动服务：
+#    pnpm dev 或 pnpm start

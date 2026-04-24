@@ -5,8 +5,6 @@ const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  // 禁用 source map
-  productionBrowserSourceMaps: false,
   images: {
     remotePatterns: [
       {
@@ -27,10 +25,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', 'react-icons'],
     forceSwcTransforms: false,
   },
-  webpack: (config, { isServer }) => {
-    // 禁用 source map
-    config.devtool = false;
-    
+  webpack: (config) => {
     config.ignoreWarnings = [
       { module: /node_modules/ },
     ];

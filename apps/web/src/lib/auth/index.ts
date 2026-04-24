@@ -8,7 +8,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -16,19 +16,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const identifier = credentials.email as string;
+        const email = credentials.email as string;
         const password = credentials.password as string;
 
-        console.log('[Auth] 尝试登录:', identifier);
+        console.log('[Auth] 尝试登录:', email);
 
-        // 判断是邮箱还是用户名
-        const isEmail = identifier.includes('@');
-        
-        // 根据类型查询用户
-        const user = await prisma.user.findFirst({
-          where: isEmail 
-            ? { email: identifier }
-            : { username: identifier },
+        const user = await prisma.user.findUnique({
+          where: { email },
           include: {
             profile: true,
             roles: {
@@ -106,5 +100,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/login",
   },
+  secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
 });

@@ -41,7 +41,7 @@ export async function GET() {
           email: user.email,
           displayName: user.profile?.displayName || user.username,
           avatarUrl: user.profile?.avatarUrl || '',
-          isAdmin: user.roles?.some((ur: any) => ur.role.name === 'ADMIN') || false,
+          isAdmin: user.roles?.some(ur => ur.role.name === 'ADMIN') || false,
         };
       }
     }

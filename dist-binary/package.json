@@ -1,0 +1,25 @@
+{
+  "name": "blog-platform-binary",
+  "version": "1.0.0",
+  "description": "Blog Platform - Single Binary",
+  "main": "apps/web/server.js",
+  "bin": "apps/web/server.js",
+  "pkg": {
+    "scripts": [
+      "apps/web/.next/standalone/apps/web/.next/**/*.js",
+      "apps/web/.next/standalone/apps/web/.next/server/**/*.js"
+    ],
+    "assets": [
+      "apps/web/.next/static/**/*",
+      "apps/web/public/**/*",
+      "packages/database/prisma/*.db"
+    ],
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ],
+    "outputPath": "bin"
+  },
+  "dependencies": {}
+}

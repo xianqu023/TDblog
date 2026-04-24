@@ -1,51 +1,104 @@
+const fs = require('fs');
+const path = require('path');
+
 /**
- * PM2 配置文件
- * 用于生产环境进程管理
+ * 解析 INI 配置文件
  */
+function parseIni(filePath) {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const config = {};
+  let currentSection = null;
+
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) continue;
+    const sectionMatch = trimmed.match(/^\[(.+)\]$/);
+    if (sectionMatch) {
+      currentSection = sectionMatch[1];
+      config[currentSection] = {};
+      continue;
+    }
+    if (currentSection && trimmed.includes('=')) {
+      const [key, ...valueParts] = trimmed.split('=');
+      config[currentSection][key.trim()] = valueParts.join('=').trim();
+    }
+  }
+  return config;
+}
+
+// 辅助函数：转换为绝对路径
+function toAbsolutePath(pathValue) {
+  if (!pathValue) return pathValue;
+  
+  if (path.isAbsolute(pathValue) || 
+      pathValue.startsWith('http://') || 
+      pathValue.startsWith('https://') ||
+      pathValue.startsWith('libsql://') ||
+      pathValue.startsWith('postgresql://') ||
+      pathValue.startsWith('postgres://') ||
+      pathValue.startsWith('mysql://')) {
+    return pathValue;
+  }
+  
+  const isFileProtocol = pathValue.startsWith('file:');
+  const cleanPath = isFileProtocol ? pathValue.substring(5) : pathValue;
+  
+  if (!path.isAbsolute(cleanPath)) {
+    const absolutePath = path.resolve(__dirname, cleanPath);
+    return isFileProtocol ? `file:${absolutePath}` : absolutePath;
+  }
+  
+  return pathValue;
+}
+
+// 加载配置
+const configPath = path.resolve(__dirname, 'conf.ini');
+const iniConfig = fs.existsSync(configPath) ? parseIni(configPath) : {};
+
+const dbConfig = iniConfig.database || {};
+const serverConfig = iniConfig.server || {};
+const authConfig = iniConfig.auth || {};
+const siteConfig = iniConfig.site || {};
+const storageConfig = iniConfig.storage || {};
+const aiConfig = iniConfig.ai || {};
+
+// 数据库 URL 使用绝对路径
+const dbUrl = toAbsolutePath(dbConfig.url || 'file:./packages/database/prisma/blog.db');
 
 module.exports = {
-  apps: [
-    {
-      name: 'blog-platform',
-      // 使用 standalone 服务器
-      script: './apps/web/.next/standalone/apps/web/server.js',
-      
-      // 实例数量（集群模式）
-      instances: 1,
-      exec_mode: 'fork', // 不使用 cluster，SQLite 不支持多进程
-      
-      // 环境变量
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3000,
-        STANDALONE: 'true',
-      },
-      
-      // 错误处理
-      error_file: './logs/pm2-error.log',
-      out_file: './logs/pm2-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      merge_logs: true,
-      
-      // 自动重启
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '1G',
-      
-      // 重启策略
-      restart_delay: 4000,
-      max_restarts: 10,
-      min_uptime: '10s',
-      
-      // 网络配置
-      listen_timeout: 3000,
-      kill_timeout: 5000,
-      
-      // 健康检查
-      status: {
-        port: 9615,
-        path: '/health',
-      },
+  apps: [{
+    name: 'blog-platform',
+    script: 'node',
+    args: 'scripts/start-prod.js',
+    cwd: '.',
+    instances: serverConfig.instances || 1,
+    autorestart: true,
+    max_memory_restart: serverConfig.max_memory || '1G',
+    env: {
+      NODE_ENV: serverConfig.node_env || 'production',
+      PORT: serverConfig.port || '3000',
+      HOST: serverConfig.host || '0.0.0.0',
+      DATABASE_URL: dbUrl,
+      AUTH_SECRET: authConfig.secret || '',
+      NEXTAUTH_SECRET: authConfig.secret || '',
+      NEXTAUTH_URL: authConfig.url || '',
+      NEXT_PUBLIC_SITE_NAME: siteConfig.name || '',
+      NEXT_PUBLIC_SITE_URL: siteConfig.url || '',
+      STORAGE_DRIVER: storageConfig.driver || 'local',
+      STORAGE_LOCAL_PATH: path.resolve(__dirname, storageConfig.local_path || './uploads'),
+      STORAGE_LOCAL_URL: storageConfig.local_url || '/uploads',
+      // AI 配置
+      OPENAI_API_KEY: aiConfig.api_key || '',
+      OPENAI_BASE_URL: aiConfig.base_url || '',
+      AI_MODEL: aiConfig.model || '',
     },
-  ],
+    error_file: 'logs/pm2-error.log',
+    out_file: 'logs/pm2-out.log',
+    merge_logs: true,
+    log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    min_uptime: '10s',
+    max_restarts: 5,
+    watch: false,
+    ignore_watch: ['node_modules', '.next', 'logs', 'conf.ini', 'uploads']
+  }]
 };

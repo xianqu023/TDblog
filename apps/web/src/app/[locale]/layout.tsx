@@ -52,12 +52,19 @@ export async function generateMetadata({
     },
   };
 
-  // 如果设置了 faviconUrl，添加到 metadata
+  // 设置 favicon - 优先使用数据库配置，否则使用默认 favicon.ico
   if (siteSettings.faviconUrl) {
     metadata.icons = {
       icon: siteSettings.faviconUrl,
       shortcut: siteSettings.faviconUrl,
       apple: siteSettings.faviconUrl,
+    };
+  } else {
+    // 使用默认的 favicon.ico
+    metadata.icons = {
+      icon: '/favicon.ico',
+      shortcut: '/favicon.ico',
+      apple: '/favicon.ico',
     };
   }
 
