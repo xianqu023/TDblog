@@ -214,12 +214,54 @@ const commands = {
     log('\n🚀 开始部署...\n', 'cyan');
     
     try {
-      // 1. 环境检查
-      await commands.check();
+      // 1. 环境检查（仅检查基础环境，不强制要求 .env.local 和 node_modules）
+      log('\n🔍 环境检查...\n', 'cyan');
+      
+      const basicChecks = [
+        {
+          name: 'Node.js',
+          check: () => {
+            const version = execSync('node -v', { encoding: 'utf-8' }).trim();
+            return version.startsWith('v');
+          },
+        },
+        {
+          name: 'pnpm',
+          check: () => {
+            execSync('pnpm -v', { encoding: 'utf-8' });
+            return true;
+          },
+        },
+        {
+          name: '数据库目录',
+          check: () => {
+            const dbPath = path.join(PROJECT_ROOT, 'packages/database/prisma');
+            return fs.existsSync(dbPath);
+          },
+        },
+      ];
 
-      // 2. 安装依赖
+      for (const item of basicChecks) {
+        try {
+          const passed = item.check();
+          if (passed) {
+            logSuccess(`${item.name} ✓`);
+          } else {
+            logError(`${item.name} ✗`);
+          }
+        } catch {
+          logError(`${item.name} ✗`);
+        }
+      }
+
+      // 2. 安装依赖（不使用 --frozen-lockfile，允许重建）
       log('\n📦 安装依赖...', 'cyan');
-      exec('pnpm install --frozen-lockfile');
+      try {
+        exec('pnpm install --frozen-lockfile');
+      } catch {
+        logWarning('锁定文件不兼容，重新生成...');
+        exec('pnpm install');
+      }
       logSuccess('依赖安装完成');
 
       // 3. 初始化数据库
